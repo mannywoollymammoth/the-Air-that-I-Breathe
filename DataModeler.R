@@ -7,6 +7,7 @@ library('tidyverse')
 nodeLocations <- data.frame(ls.nodes(filters=list()))
 nodeLocations <- nodeLocations %>% select(location.geometry)
 coordinates <- nodeLocations$location.geometry$coordinates
+coordinates
 
 #
 # df <- 
