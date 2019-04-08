@@ -19,19 +19,23 @@ library(leaflet)
 library(scales)
 
 source('AOTMap.R')
+source('AOTTable.R')
 # Define UI for application that draws a histogram
 ui <- dashboardPage(
   dashboardHeader(),
   dashboardSidebar(sidebarMenu(
     menuItem(
-      "AOTmap",
-      tabName = "AOTMap",
-      icon = icon("dashboard")
+      "AOT",
+      tabName = "AOT",
+      icon = icon("dashboard"),
+      menuSubItem("AOTMap", tabName = "AOTMap"),
+      menuSubItem("AOTTable", tabName = "AOTTable")
+      
     ),
     menuItem(
-      "Widgets",
+      "Heat Map",
       icon = icon("th"),
-      tabName = "widgets",
+      tabName = "heatMap",
       badgeLabel = "new",
       badgeColor = "green"
     )
@@ -44,7 +48,11 @@ ui <- dashboardPage(
       AOTMap(id = "AOTMap")
     ),
     tabItem(
-      tabName = "widgets",
+      tabName = "AOTTable",
+      AOTTable(id = "AOTTable")
+    ),
+    tabItem(
+      tabName = "heatMap",
       h2("Widgets tab content")
     )
   )
@@ -58,6 +66,7 @@ ui <- dashboardPage(
 # Define server logic required to draw a histogram
 server <- function(input, output) {
   callModule(AOTmapServer, id = "AOTMap")
+  callModule(AOTTableServer, id = "AOTTable")
 }
 
 # Run the application
