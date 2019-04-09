@@ -47,8 +47,6 @@ AOTMap <- function(id) {
 }
 
 AOTmapServer <- function(input, output, session) {
-  
-  
   output$leaf <- renderLeaflet({
     coordinates <- getNodeGeoPoints()
     print("longitude")
@@ -63,6 +61,12 @@ AOTmapServer <- function(input, output, session) {
                    zoom = 12)
     
     #map %>% addMarkers(lng = coordinates$longitude, lat = coordinates$latitude)
-    map %>% addCircleMarkers(lng = coordinates$longitude, lat = coordinates$latitude, radius = 4, color = "blue", fillOpacity = 1)
+    map %>% addCircleMarkers(
+      lng = coordinates$longitude,
+      lat = coordinates$latitude,
+      radius = 4,
+      color = "blue",
+      fillOpacity = 1
+    )
   })
 }
