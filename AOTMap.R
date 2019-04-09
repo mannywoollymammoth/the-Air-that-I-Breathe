@@ -8,6 +8,8 @@ library(grid)
 library(leaflet)
 library(scales)
 
+source('DataModeler.R')
+
 
 AOTMap <- function(id) {
   nameSpace <- NS(id)
@@ -45,18 +47,22 @@ AOTMap <- function(id) {
 }
 
 AOTmapServer <- function(input, output, session) {
+  
+  
   output$leaf <- renderLeaflet({
+    coordinates <- getNodeGeoPoints()
+    print("longitude")
+    print(coordinates[1])
+    print("latitude")
+    print(coordinates[2])
     map <- leaflet()
     map <- addTiles(map)
     map <- setView(map,
                    lng = -87.647998,
                    lat = 41.870,
                    zoom = 12)
-    map <-
-      addMarkers(map,
-                 lng = -87.6477,
-                 lat = 41.8698,
-                 popup = "evl")
-    map
+    
+    #map %>% addMarkers(lng = coordinates$longitude, lat = coordinates$latitude)
+    map %>% addCircleMarkers(lng = coordinates$longitude, lat = coordinates$latitude, radius = 4, color = "blue", fillOpacity = 1)
   })
 }
