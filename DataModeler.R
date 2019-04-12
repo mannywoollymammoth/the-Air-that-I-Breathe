@@ -4,15 +4,25 @@ library('tidyverse')
 
 
 
-nodeLocations <- data.frame(ls.nodes(filters=list()))
-nodeLocations <- nodeLocations %>% select(location.geometry)
-coordinates <- nodeLocations$location.geometry$coordinates
-coordinates
 
-#
-# df <- 
-#   #revgeo(longitude=-77.0229529, latitude=38.89283435,output='hash', item='zip')
-#   revgeo(longitude=--87.627678, latitude=41.878377,output='hash', item='zip')
-# df
-
-
+getNodeGeoPoints <- function() {
+  latitude = c()
+  longitude = c()
+  
+  #query data from the AOT devices
+  nodeLocations <- data.frame(ls.nodes(filters = list()))
+  nodeLocations <- nodeLocations %>% select(location.geometry)
+  coordinates <- nodeLocations$location.geometry$coordinates
+  
+  #remove any invalid coordinates from the list
+  for (point in coordinates) {
+    if (point[1] != 0) {
+      longitude <- 
+        append(longitude, point[1], after = length(longitude))
+      latitude <-
+        append(latitude, point[2], after = length(latitude))
+    }
+  }
+  
+  return (data.frame(longitude, latitude))
+}

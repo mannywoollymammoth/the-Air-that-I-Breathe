@@ -8,6 +8,8 @@ library(grid)
 library(leaflet)
 library(scales)
 
+source('DataModeler.R')
+
 
 AOTMap <- function(id) {
   nameSpace <- NS(id)
@@ -29,34 +31,97 @@ AOTMap <- function(id) {
       
     )
     
+    
   ),
   column(
     5,
-    box(
+    
+    tabBox(
       title = "Leaflet Map",
-      solidHeader = TRUE,
-      status = "primary",
       width = 12,
-      leafletOutput(nameSpace("leaf"), height = 600)
+      tabPanel("Tab1", leafletOutput(nameSpace("Normal"), height = 600)),
+      tabPanel("Tab2", leafletOutput(nameSpace("StamenTonerMap"), height = 600)),
+      tabPanel("Tab3", leafletOutput(nameSpace("NightSky"), height = 600))
     )
+    
     
   ))
   
 }
 
 AOTmapServer <- function(input, output, session) {
-  output$leaf <- renderLeaflet({
+  output$Normal <- renderLeaflet({
+    coordinates <- getNodeGeoPoints()
+    print("longitude")
+    print(coordinates[1])
+    print("latitude")
+    print(coordinates[2])
     map <- leaflet()
     map <- addTiles(map)
     map <- setView(map,
                    lng = -87.647998,
                    lat = 41.870,
                    zoom = 12)
-    map <-
-      addMarkers(map,
-                 lng = -87.6477,
-                 lat = 41.8698,
-                 popup = "evl")
-    map
+    
+    #map %>% addMarkers(lng = coordinates$longitude, lat = coordinates$latitude)
+    map %>% addCircleMarkers(
+      lng = coordinates$longitude,
+      lat = coordinates$latitude,
+      radius = 4,
+      color = "blue",
+      fillOpacity = 1
+    )
   })
+  
+  output$StamenTonerMap <- renderLeaflet({
+    coordinates <- getNodeGeoPoints()
+    print("longitude")
+    print(coordinates[1])
+    print("latitude")
+    print(coordinates[2])
+    map <- leaflet()
+    map <- addTiles(map)
+    map <- setView(map,
+                   lng = -87.647998,
+                   lat = 41.870,
+                   zoom = 12)
+    
+    #map %>% addMarkers(lng = coordinates$longitude, lat = coordinates$latitude)
+    map %>% addProviderTiles(providers$Stamen.Toner) %>% addCircleMarkers(
+      lng = coordinates$longitude,
+      lat = coordinates$latitude,
+      radius = 4,
+      color = "blue",
+      fillOpacity = 1
+    )
+    
+    
+  })
+  
+  
+  output$NightSky <- renderLeaflet({
+    coordinates <- getNodeGeoPoints()
+    print("longitude")
+    print(coordinates[1])
+    print("latitude")
+    print(coordinates[2])
+    map <- leaflet()
+    map <- addTiles(map)
+    map <- setView(map,
+                   lng = -87.647998,
+                   lat = 41.870,
+                   zoom = 12)
+    
+    #map %>% addMarkers(lng = coordinates$longitude, lat = coordinates$latitude)
+    map %>% addProviderTiles(providers$Esri.WorldImagery) %>% addCircleMarkers(
+      lng = coordinates$longitude,
+      lat = coordinates$latitude,
+      radius = 4,
+      color = "blue",
+      fillOpacity = 1
+    )
+    
+    
+  })
+  
 }

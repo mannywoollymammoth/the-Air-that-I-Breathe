@@ -35,9 +35,7 @@ ui <- dashboardPage(
     menuItem(
       "Heat Map",
       icon = icon("th"),
-      tabName = "heatMap",
-      badgeLabel = "new",
-      badgeColor = "green"
+      tabName = "heatMap"
     )
   )),
   
