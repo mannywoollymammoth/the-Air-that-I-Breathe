@@ -2,8 +2,7 @@ library('revgeo')
 library(AotClient)
 library('tidyverse')
 
-
-
+#all_node_data <- ls.nodes()
 
 getNodeGeoPoints <- function() {
   latitude = c()
@@ -25,4 +24,37 @@ getNodeGeoPoints <- function() {
   }
   
   return (data.frame(longitude, latitude))
+}
+
+getAddressOfCurrNode <- function(node) {
+  node <- toString(node[5])
+  print(node)
+  
+  address <- subset(all_node_data, all_node_data$vsn==node)
+  address <- toString(address)
+  
+  return (address)
+}
+
+getAOTData <- function() {
+  all_observations <- ls.observations()
+  
+  df <-
+    data.frame(
+      timestamp = all_observations$timestamp,
+      value = all_observations$value,
+      uom = all_observations$uom,
+      sensor_path = all_observations$sensor_path,
+      node_vsn = all_observations$node_vsn
+    )
+  
+  #df$address <- apply(df, 1, getAddressOfCurrNode)
+  
+  df
+}
+
+getAOTvalue <- function(all_data, value) {
+  subset <- all_data[grep(value, all_data$sensor_path), ]
+  
+  return (subset)
 }
