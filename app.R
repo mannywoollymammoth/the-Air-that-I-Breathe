@@ -1,12 +1,5 @@
-#
-# This is a Shiny web application. You can run the application by clicking
-# the 'Run App' button above.
-#
-# Find out more about building applications with Shiny here:
-#
-#    http://shiny.rstudio.com/
-#
-
+# cs 424 - proj 3
+# Fatima Qarni, Emmanuel Martinez
 
 library(shiny)
 library(shinydashboard)
@@ -32,34 +25,22 @@ ui <- dashboardPage(
       menuSubItem("AOTTable", tabName = "AOTTable")
       
     ),
-    menuItem(
-      "Heat Map",
-      icon = icon("th"),
-      tabName = "heatMap"
-    )
+    menuItem("Heat Map",
+             icon = icon("th"),
+             tabName = "heatMap")
   )),
   
   
   dynamicBody <- dashboardBody(tabItems(
-    tabItem(
-      tabName = "AOTMap",
-      AOTMap(id = "AOTMap")
-    ),
-    tabItem(
-      tabName = "AOTTable",
-      AOTTable(id = "AOTTable")
-    ),
-    tabItem(
-      tabName = "heatMap",
-      h2("Widgets tab content")
-    )
-  )
+    tabItem(tabName = "AOTMap",
+            AOTMap(id = "AOTMap")),
+    tabItem(tabName = "AOTTable",
+            AOTTable(id = "AOTTable")),
+    tabItem(tabName = "heatMap",
+            h2("Widgets tab content"))
+  )),
   
-  ),
-  
-  body <- dashboardBody(
-    dynamicBody
-  )
+  body <- dashboardBody(dynamicBody)
 )
 # Define server logic required to draw a histogram
 server <- function(input, output) {

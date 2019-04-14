@@ -25,7 +25,17 @@ AOTTable <- function(id) {
         nameSpace("data_selected"),
         inline = TRUE,
         "Data to show:",
-        c("CO", "SO2", "NO2", "Ozone", "PM10", "PM2.5", "Temp", "Light intensity", "Humidity"),
+        c(
+          "CO",
+          "SO2",
+          "NO2",
+          "Ozone",
+          "PM10",
+          "PM2.5",
+          "Temp",
+          "Light intensity",
+          "Humidity"
+        ),
         selected = TRUE
       )
     ),
@@ -107,7 +117,6 @@ AOTTable <- function(id) {
 }
 
 AOTTableServer <- function(input, output, session) {
-  
   autoInvalidate <- reactiveTimer(60000) # one minute
   
   observe({
