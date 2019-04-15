@@ -173,29 +173,25 @@ AOTTableServer <- function(input, output, session) {
     
     autoInvalidate()
     print(input$timeframe)
-    full_data <- getAOTData(input$timeframe)
-    data <- getAOTvalue(full_data, "so2")
+    data <- getAOTvalue(input$timeframe, "so2")
     data
   })
   
   output$h2s <- renderTable({
     autoInvalidate()
-    full_data <- getAOTData(input$timeframe)
-    data <- getAOTvalue(full_data, "h2s")
+    data <- getAOTvalue(input$timeframe, "h2s")
     data
   })
   
   output$o3 <- renderTable({
     autoInvalidate()
-    full_data <- getAOTData(input$timeframe)
-    data <- getAOTvalue(full_data, "o3")
+    data <- getAOTvalue(input$timeframe, "o3")
     data
   })
   
   output$no2 <- renderTable({
     autoInvalidate()
-    full_data <- getAOTData(input$timeframe)
-    data <- getAOTvalue(full_data, "no2")
+    data <- getAOTvalue(input$timeframe, "no2")
     data
   })
   
@@ -208,36 +204,31 @@ AOTTableServer <- function(input, output, session) {
   
   output$pm10 <- renderTable({
     autoInvalidate()
-    full_data <- getAOTData(input$timeframe)
-    data <- getAOTvalue(full_data, "pm10")
+    data <- getAOTvalue(input$timeframe, "pm10")
     data
   })
   
   output$co <- renderTable({
     autoInvalidate()
-    full_data <- getAOTData(input$timeframe)
-    data <- getAOTvalue(full_data, "co")
+    data <- getAOTvalue(input$timeframe, "co")
     data
   })
   
   output$temp <- renderTable({
     autoInvalidate()
-    full_data <- getAOTData(input$timeframe)
-    data <- getAOTvalue(full_data, "temperature")
+    data <- getAOTvalue(input$timeframe, "temperature")
     data
   })
   
   output$intensity <- renderTable({
     autoInvalidate()
-    full_data <- getAOTData(input$timeframe)
-    data <- getAOTvalue(full_data, "intensity")
+    data <- getAOTvalue(input$timeframe, "intensity")
     data
   })
   
   output$humidity <- renderTable({
     autoInvalidate()
-    full_data <- getAOTData(input$timeframe)
-    data <- getAOTvalue(full_data, "humidity")
+    data <- getAOTvalue(input$timeframe, "humidity")
     data
   })
   
