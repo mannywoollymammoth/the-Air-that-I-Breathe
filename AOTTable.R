@@ -74,70 +74,70 @@ AOTTable <- function(id) {
         solidHeader = TRUE,
         status = "primary",
         width = 8,
-        tableOutput(nameSpace("so2"))
+        dataTableOutput(nameSpace("so2"))
       ),
       box(
         title = "H2S",
         solidHeader = TRUE,
         status = "primary",
         width = 8,
-        tableOutput(nameSpace("h2s"))
+        dataTableOutput(nameSpace("h2s"))
       ),
       box(
         title = "O3",
         solidHeader = TRUE,
         status = "primary",
         width = 8,
-        tableOutput(nameSpace("o3"))
+        dataTableOutput(nameSpace("o3"))
       ),
       box(
         title = "NO2",
         solidHeader = TRUE,
         status = "primary",
         width = 8,
-        tableOutput(nameSpace("no2"))
+        dataTableOutput(nameSpace("no2"))
       ),
       box(
         title = "CO",
         solidHeader = TRUE,
         status = "primary",
         width = 8,
-        tableOutput(nameSpace("co"))
+        dataTableOutput(nameSpace("co"))
       ),
       box(
         title = "PM2.5",
         solidHeader = TRUE,
         status = "primary",
         width = 8,
-        tableOutput(nameSpace("pm2_5"))
+        dataTableOutput(nameSpace("pm2_5"))
       ),
       box(
         title = "PM10",
         solidHeader = TRUE,
         status = "primary",
         width = 8,
-        tableOutput(nameSpace("pm10"))
+        dataTableOutput(nameSpace("pm10"))
       ),
       box(
         title = "temperature",
         solidHeader = TRUE,
         status = "primary",
         width = 8,
-        tableOutput(nameSpace("temperature"))
+        dataTableOutput(nameSpace("temperature"))
       ),
       box(
         title = "Light Intensity",
         solidHeader = TRUE,
         status = "primary",
         width = 8,
-        tableOutput(nameSpace("intensity"))
+        dataTableOutput(nameSpace("intensity"))
       ),
       box(
         title = "Humidity",
         solidHeader = TRUE,
         status = "primary",
         width = 8,
-        tableOutput(nameSpace("humidity"))
+        dataTableOutput(nameSpace("humidity"))
       )
     )
     
@@ -168,68 +168,74 @@ AOTTableServer <- function(input, output, session) {
   
   # ui ----
   
-  output$so2 <- renderTable({
-    nameSpace <- session$ns
-    
+  output$so2 <- renderDataTable({
     autoInvalidate()
-    print(input$timeframe)
     data <- getAOTvalue(input$timeframe, "so2")
-    data
+    
+    datatable(data, options = list(pageLength = 5))
   })
   
-  output$h2s <- renderTable({
+  output$h2s <- renderDataTable({
     autoInvalidate()
     data <- getAOTvalue(input$timeframe, "h2s")
-    data
+    
+    datatable(data, options = list(pageLength = 5))
   })
   
-  output$o3 <- renderTable({
+  output$o3 <- renderDataTable({
     autoInvalidate()
     data <- getAOTvalue(input$timeframe, "o3")
-    data
+    
+    datatable(data, options = list(pageLength = 5))
   })
   
-  output$no2 <- renderTable({
+  output$no2 <- renderDataTable({
     autoInvalidate()
     data <- getAOTvalue(input$timeframe, "no2")
-    data
+    
+    datatable(data, options = list(pageLength = 5))
   })
   
-  output$pm2_5 <- renderTable({
+  output$pm2_5 <- renderDataTable({
     autoInvalidate()
-    full_data <- getAOTData(input$timeframe)
-    data <- getAOTvalue(full_data, "pm2_5")
-    data
+    data <- getAOTvalue(input$timeframe, "pm2_5")
+    
+    datatable(data, options = list(pageLength = 5))
   })
   
-  output$pm10 <- renderTable({
+  output$pm10 <- renderDataTable({
     autoInvalidate()
     data <- getAOTvalue(input$timeframe, "pm10")
-    data
+    
+    datatable(data, options = list(pageLength = 5))
   })
   
-  output$co <- renderTable({
+  output$co <- renderDataTable({
     autoInvalidate()
     data <- getAOTvalue(input$timeframe, "co")
-    data
+    
+    datatable(data, options = list(pageLength = 5))
   })
   
-  output$temp <- renderTable({
+  output$temp <- renderDataTable({
     autoInvalidate()
     data <- getAOTvalue(input$timeframe, "temperature")
-    data
+    
+    datatable(data, options = list(pageLength = 5))
   })
   
-  output$intensity <- renderTable({
+  output$intensity <- renderDataTable({
     autoInvalidate()
     data <- getAOTvalue(input$timeframe, "intensity")
-    data
+    
+    datatable(data, options = list(pageLength = 5))
   })
   
-  output$humidity <- renderTable({
+  output$humidity <- renderDataTable({
     autoInvalidate()
     data <- getAOTvalue(input$timeframe, "humidity")
-    data
+    
+    datatable(data, options = list(pageLength = 5))
   })
   
 }
