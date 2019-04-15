@@ -69,7 +69,7 @@ AOTTable <- function(id) {
     ),
     fluidRow(
       box(
-        id = "SO2",
+        id = nameSpace("SO2"),
         title = "SO2",
         solidHeader = TRUE,
         status = "primary",
@@ -159,11 +159,22 @@ AOTTableServer <- function(input, output, session) {
     nameSpace <- session$ns
     
     if("SO2" %in% input$data_selected) {
-      shinyjs::show(id = "SO2")
+      print("test got here")
+      show(id = "SO2")
     }
     else {
-      shinyjs::hide(id = "SO2")
+      hide(id = "SO2")
     }
+    
+    
+    #hide(id = "SO2")
+    # if(1) {
+    #   #shinyjs::show(id = nameSpace("SO2"))
+    #   hide(id = "so2")
+    # }
+    # else {
+    #   shinyjs::hide(id = nameSpace("SO2"))
+    # }
   })
   
   # ui ----

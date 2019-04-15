@@ -41,7 +41,9 @@ ui <- dashboardPage(
             h2("Widgets tab content"))
   )),
   
-  body <- dashboardBody(dynamicBody)
+  body <- dashboardBody(
+    useShinyjs(),
+    dynamicBody)
 )
 # Define server logic required to draw a histogram
 server <- function(input, output) {
