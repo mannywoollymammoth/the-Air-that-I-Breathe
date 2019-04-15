@@ -16,14 +16,20 @@ temperature_sensors <- all_sensors[grep("temperature", all_sensors)]
 intensity_sensors <- all_sensors[grep("light_intensity", all_sensors)]
 humidity_sensors <- all_sensors[grep("humidity", all_sensors)]
 
+
+#returns list of latitudes and longitudes along with their VSN to identify them
 getNodeGeoPoints <- function() {
   latitude = c()
   longitude = c()
+  vsn = c()
+  counter <- 1
   
   #query data from the AOT devices
   nodeLocations <- data.frame(ls.nodes(filters = list()))
-  nodeLocations <- nodeLocations %>% select(location.geometry)
-  coordinates <- nodeLocations$location.geometry$coordinates
+  nodeLatLong <- nodeLocations %>% select(location.geometry)
+  coordinates <- nodeLatLong$location.geometry$coordinates
+  nodeID <- nodeLocations %>% select(vsn)
+  nodeID <- as.character(nodeID$vsn)
   
   #remove any invalid coordinates from the list
   for (point in coordinates) {
@@ -32,10 +38,15 @@ getNodeGeoPoints <- function() {
         append(longitude, point[1], after = length(longitude))
       latitude <-
         append(latitude, point[2], after = length(latitude))
+      vsn <-
+        append(vsn, nodeID[counter], after = length(vsn))
     }
+    counter <- counter + 1
   }
   
-  return (data.frame(longitude, latitude))
+  print("This is the vsn")
+  print(vsn)
+  return (data.frame(longitude, latitude, vsn))
 }
 
 getAddressOfCurrNode <- function(node) {

@@ -52,10 +52,7 @@ AOTMap <- function(id) {
 AOTmapServer <- function(input, output, session) {
   output$Normal <- renderLeaflet({
     coordinates <- getNodeGeoPoints()
-    print("longitude")
-    print(coordinates[1])
-    print("latitude")
-    print(coordinates[2])
+    
     map <- leaflet()
     map <- addTiles(map)
     map <- setView(map,
@@ -69,7 +66,8 @@ AOTmapServer <- function(input, output, session) {
       lat = coordinates$latitude,
       radius = 4,
       color = "blue",
-      fillOpacity = 1
+      fillOpacity = 1,
+      popup = coordinates$vsn
     )
   })
   
@@ -81,10 +79,7 @@ AOTmapServer <- function(input, output, session) {
   
   output$StamenTonerMap <- renderLeaflet({
     coordinates <- getNodeGeoPoints()
-    print("longitude")
-    print(coordinates[1])
-    print("latitude")
-    print(coordinates[2])
+   
     map <- leaflet()
     map <- addTiles(map)
     map <- setView(map,
@@ -107,10 +102,7 @@ AOTmapServer <- function(input, output, session) {
   
   output$NightSky <- renderLeaflet({
     coordinates <- getNodeGeoPoints()
-    print("longitude")
-    print(coordinates[1])
-    print("latitude")
-    print(coordinates[2])
+   
     map <- leaflet()
     map <- addTiles(map)
     map <- setView(map,
