@@ -77,6 +77,13 @@ AOTTable <- function(id) {
         dataTableOutput(nameSpace("so2"))
       ),
       box(
+        title = "SO2",
+        solidHeader = TRUE,
+        status = "primary",
+        width = 8,
+        plotOutput(nameSpace("so2graph"))
+      ),
+      box(
         title = "H2S",
         solidHeader = TRUE,
         status = "primary",
@@ -177,7 +184,7 @@ AOTTableServer <- function(input, output, session) {
     # }
   })
   
-  # ui ----
+  # tables ----
   
   output$so2 <- renderDataTable({
     autoInvalidate()
@@ -247,6 +254,16 @@ AOTTableServer <- function(input, output, session) {
     data <- getAOTvalue(input$timeframe, "humidity")
     
     datatable(data, options = list(pageLength = 5))
+  })
+  
+  # plots ----
+  # TODO: these graphs show data but they're pretty garbage lol, probably group the data?
+  
+  output$so2graph <- renderPlot({
+    autoInvalidate()
+    data <- getAOTvalue(input$timeframe, "so2")
+    
+    ggplot(data, aes(y=data$value, x=data$timestamp)) + geom_point()
   })
   
 }

@@ -75,6 +75,13 @@ getTimeFromToday <- function(period) {
   return (currTime)
 }
 
+updateTimeFormatForPlot <- function(time) {
+  time <- time[1]
+  newTime <- strptime(toString(time), tz="UTC", format="%Y-%m-%dT%H:%M:%S")
+  newTime <- strftime(newTime, tz="UTC", format="%Y-%m-%d %H:%M:%S")
+  return (newTime)
+}
+
 getAOTvalue <- function(period, value) {
   time = getTimeFromToday(period)
   
@@ -102,7 +109,11 @@ getAOTvalue <- function(period, value) {
       node_vsn = all_observations$node_vsn
     )
   
+  # add address of current node
   df$address <- apply(df, 1, getAddressOfCurrNode)
+  
+  # change format of time column
+  df$timestamp <- apply(df, 1, updateTimeFormatForPlot)
   
   return (df)
 }
