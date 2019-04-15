@@ -7,6 +7,7 @@ library(jpeg)
 library(grid)
 library(leaflet)
 library(scales)
+library(shinyjs)
 
 source('DataModeler.R')
 
@@ -17,7 +18,7 @@ AOTTable <- function(id) {
   fluidRow(column(
     7,
     box(
-      title = "Leaflet Map Parameters",
+      title = "Table Parameters",
       solidHeader = TRUE,
       status = "primary",
       width = 12,
@@ -36,11 +37,39 @@ AOTTable <- function(id) {
           "Light intensity",
           "Humidity"
         ),
-        selected = TRUE
+        selected = c(
+          "CO",
+          "SO2",
+          "NO2",
+          "Ozone",
+          "PM10",
+          "PM2.5",
+          "Temp",
+          "Light intensity",
+          "Humidity"
+        )
+      )
+    ),
+    box(
+      title = "Leaflet Map Parameters",
+      solidHeader = TRUE,
+      status = "primary",
+      width = 12,
+      radioButtons(
+        nameSpace("timeframe"),
+        inline = TRUE,
+        "Data to show:",
+        c(
+          "current",
+          "day",
+          "week"
+        ),
+        selected = c("current")
       )
     ),
     fluidRow(
       box(
+        id = "SO2",
         title = "SO2",
         solidHeader = TRUE,
         status = "primary",
@@ -124,76 +153,92 @@ AOTTableServer <- function(input, output, session) {
     autoInvalidate()
   })
   
+  # TODO: I can't get this to work????? 
+  observeEvent(input$data_selected,{
+    
+    nameSpace <- session$ns
+    
+    if("SO2" %in% input$data_selected) {
+      shinyjs::show(id = "SO2")
+    }
+    else {
+      shinyjs::hide(id = "SO2")
+    }
+  })
+  
   # ui ----
   
   output$so2 <- renderTable({
+    nameSpace <- session$ns
+    
     autoInvalidate()
-    full_data <- getAOTData()
-    temperature <- getAOTvalue(full_data, "so2")
-    temperature
+    print(input$timeframe)
+    full_data <- getAOTData(input$timeframe)
+    data <- getAOTvalue(full_data, "so2")
+    data
   })
   
   output$h2s <- renderTable({
     autoInvalidate()
-    full_data <- getAOTData()
-    temperature <- getAOTvalue(full_data, "h2s")
-    temperature
+    full_data <- getAOTData(input$timeframe)
+    data <- getAOTvalue(full_data, "h2s")
+    data
   })
   
   output$o3 <- renderTable({
     autoInvalidate()
-    full_data <- getAOTData()
-    temperature <- getAOTvalue(full_data, "o3")
-    temperature
+    full_data <- getAOTData(input$timeframe)
+    data <- getAOTvalue(full_data, "o3")
+    data
   })
   
   output$no2 <- renderTable({
     autoInvalidate()
-    full_data <- getAOTData()
-    temperature <- getAOTvalue(full_data, "no2")
-    temperature
+    full_data <- getAOTData(input$timeframe)
+    data <- getAOTvalue(full_data, "no2")
+    data
   })
   
   output$pm2_5 <- renderTable({
     autoInvalidate()
-    full_data <- getAOTData()
-    temperature <- getAOTvalue(full_data, "pm2_5")
-    temperature
+    full_data <- getAOTData(input$timeframe)
+    data <- getAOTvalue(full_data, "pm2_5")
+    data
   })
   
   output$pm10 <- renderTable({
     autoInvalidate()
-    full_data <- getAOTData()
-    temperature <- getAOTvalue(full_data, "pm10")
-    temperature
+    full_data <- getAOTData(input$timeframe)
+    data <- getAOTvalue(full_data, "pm10")
+    data
   })
   
   output$co <- renderTable({
     autoInvalidate()
-    full_data <- getAOTData()
-    temperature <- getAOTvalue(full_data, "co")
-    temperature
+    full_data <- getAOTData(input$timeframe)
+    data <- getAOTvalue(full_data, "co")
+    data
   })
   
   output$temp <- renderTable({
     autoInvalidate()
-    full_data <- getAOTData()
-    temperature <- getAOTvalue(full_data, "temperature")
-    temperature
+    full_data <- getAOTData(input$timeframe)
+    data <- getAOTvalue(full_data, "temperature")
+    data
   })
   
   output$intensity <- renderTable({
     autoInvalidate()
-    full_data <- getAOTData()
-    temperature <- getAOTvalue(full_data, "intensity")
-    temperature
+    full_data <- getAOTData(input$timeframe)
+    data <- getAOTvalue(full_data, "intensity")
+    data
   })
   
   output$humidity <- renderTable({
     autoInvalidate()
-    full_data <- getAOTData()
-    temperature <- getAOTvalue(full_data, "humidity")
-    temperature
+    full_data <- getAOTData(input$timeframe)
+    data <- getAOTvalue(full_data, "humidity")
+    data
   })
   
 }

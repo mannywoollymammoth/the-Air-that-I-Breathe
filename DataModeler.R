@@ -35,8 +35,27 @@ getAddressOfCurrNode <- function(node) {
   return (address)
 }
 
-getAOTData <- function() {
-  all_observations <- ls.observations()
+getTimeFromToday <- function(period) {
+  currTime = as.POSIXlt(Sys.time(), "UTC")
+  
+  if("day" %in% period){
+    currTime = as.Date(currTime) - 1
+  }
+  else if("week" %in% period){
+    currTime = as.Date(currTime) - 7
+  }
+  else{
+    currTime = as.Date(currTime)
+  }
+  
+  currTime = strftime(currTime, tz="UTC", format="lt:%Y-%m-%dT%H:%M:%S")
+  return (currTime)
+}
+
+getAOTData <- function(time) {
+  time = getTimeFromToday(time)
+  print(time)
+  all_observations <- ls.observations(filters = list(timestamp=time))
   
   df <-
     data.frame(

@@ -10,6 +10,7 @@ library(jpeg)
 library(grid)
 library(leaflet)
 library(scales)
+library(shinyjs)
 
 source('AOTMap.R')
 source('AOTTable.R')
