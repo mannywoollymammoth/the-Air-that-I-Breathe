@@ -73,6 +73,12 @@ AOTmapServer <- function(input, output, session) {
     )
   })
   
+  observeEvent(input$Normal_marker_click, { 
+    node <- input$Normal_marker_click
+    print(node)
+  })
+  
+  
   output$StamenTonerMap <- renderLeaflet({
     coordinates <- getNodeGeoPoints()
     print("longitude")
