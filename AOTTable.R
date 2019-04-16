@@ -166,7 +166,6 @@ AOTTableServer <- function(input, output, session) {
     nameSpace <- session$ns
     
     if("SO2" %in% input$data_selected) {
-      print("test got here")
       show(id = "SO2")
     }
     else {

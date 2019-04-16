@@ -28,7 +28,13 @@ AOTMap <- function(id) {
         c("CO", "SO2", "NO2", "Ozone", "PM10", "PM2.5", "Wind", "Temp"),
         selected = TRUE
       )
-      
+    ),
+    box(
+      title = "Curr Node Data",
+      solidHeader = TRUE,
+      status = "primary",
+      width = 8,
+      dataTableOutput(nameSpace("nodeTable"))
     )
     
     
@@ -50,6 +56,9 @@ AOTMap <- function(id) {
 }
 
 AOTmapServer <- function(input, output, session) {
+  
+  currNode = NULL
+  
   output$Normal <- renderLeaflet({
     coordinates <- getNodeGeoPoints()
     
@@ -67,13 +76,21 @@ AOTmapServer <- function(input, output, session) {
       radius = 4,
       color = "blue",
       fillOpacity = 1,
-      popup = coordinates$vsn
+      popup = coordinates$vsn,
+      layerId = coordinates$vsn
     )
   })
   
   observeEvent(input$Normal_marker_click, { 
-    node <- input$Normal_marker_click
-    print(node)
+    currNode <- input$Normal_marker_click
+    
+    
+  })
+  
+  output$nodeTable <- renderDataTable({
+    print(currNode)
+    data <- getNodeData(currNode)
+    datatable(data, options = list(pageLength = 5))
   })
   
   
@@ -110,7 +127,6 @@ AOTmapServer <- function(input, output, session) {
                    lat = 41.870,
                    zoom = 12)
     
-    #map %>% addMarkers(lng = coordinates$longitude, lat = coordinates$latitude)
     map %>% addProviderTiles(providers$Esri.WorldImagery) %>% addCircleMarkers(
       lng = coordinates$longitude,
       lat = coordinates$latitude,
