@@ -44,8 +44,6 @@ getNodeGeoPoints <- function() {
     counter <- counter + 1
   }
   
-  print("This is the vsn")
-  print(vsn)
   return (data.frame(longitude, latitude, vsn))
 }
 
@@ -116,4 +114,26 @@ getAOTvalue <- function(period, value) {
   df$timestamp <- apply(df, 1, updateTimeFormatForPlot)
   
   return (df)
+}
+
+getNodeData <- function(node) {
+  obs <- ls.observations(filters = list(node_vsn=node))
+  
+  df <-
+    data.frame(
+      timestamp = obs$timestamp,
+      value = obs$value,
+      uom = obs$uom,
+      sensor_path = obs$sensor_path,
+      node_vsn = obs$node_vsn
+    )
+  
+  # add address of current node
+  df$address <- apply(df, 1, getAddressOfCurrNode)
+  
+  # change format of time column
+  df$timestamp <- apply(df, 1, updateTimeFormatForPlot)
+  
+  return(df)
+  
 }
