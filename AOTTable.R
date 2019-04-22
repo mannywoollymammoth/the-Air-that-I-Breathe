@@ -59,11 +59,9 @@ AOTTable <- function(id) {
         nameSpace("timeframe"),
         inline = TRUE,
         "Data to show:",
-        c(
-          "current",
+        c("current",
           "day",
-          "week"
-        ),
+          "week"),
         selected = c("current")
       )
     ),
@@ -160,12 +158,11 @@ AOTTableServer <- function(input, output, session) {
     autoInvalidate()
   })
   
-  # TODO: I can't get this to work????? 
-  observeEvent(input$data_selected,{
-    
+  # TODO: I can't get this to work?????
+  observeEvent(input$data_selected, {
     nameSpace <- session$ns
     
-    if("SO2" %in% input$data_selected) {
+    if ("SO2" %in% input$data_selected) {
       show(id = "SO2")
     }
     else {
@@ -262,7 +259,7 @@ AOTTableServer <- function(input, output, session) {
     autoInvalidate()
     data <- getAOTvalue(input$timeframe, "so2")
     
-    ggplot(data, aes(y=data$value, x=data$timestamp)) + geom_point()
+    ggplot(data, aes(y = data$value, x = data$timestamp)) + geom_point()
   })
   
 }
