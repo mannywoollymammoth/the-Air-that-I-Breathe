@@ -99,7 +99,6 @@ getAOTvalue <- function(period, value) {
   
   for (name in temperature_sensors) {
     curr <- ls.observations(filters = list(sensor=name, timestamp=time))
-    print(curr)
   }
   
   
@@ -125,7 +124,7 @@ getAOTvalue <- function(period, value) {
 }
 
 getNodeData <- function(node) {
-  obs <- ls.observations(filters = list(node_vsn=node))
+  obs <- ls.observations(filters = list(node=node))
   
   df <-
     data.frame(

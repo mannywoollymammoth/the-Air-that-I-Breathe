@@ -57,7 +57,21 @@ AOTMap <- function(id) {
 
 AOTmapServer <- function(input, output, session) {
   
-  currNode = NULL
+  reactiveValues <- reactiveValues()
+  reactiveValues$currNode <- "077"  # set a default val to start with
+  
+  nodeDataReactive <- reactive({
+    tryCatch({
+      getNodeData(reactiveValues$currNode)
+    },
+    error=function(cond) {
+      # TODO: lol this is a terrible way to write this code I'm sure but I couldn't figure it out
+      janky_solution = ""
+      validate(
+        need(janky_solution!="", "No data available for this node. Please select a different node.")
+      )
+    })
+  })
   
   output$Normal <- renderLeaflet({
     coordinates <- getNodeGeoPoints()
@@ -82,14 +96,11 @@ AOTmapServer <- function(input, output, session) {
   })
   
   observeEvent(input$Normal_marker_click, { 
-    currNode <- input$Normal_marker_click
-    
-    
+    reactiveValues$currNode <- input$Normal_marker_click$id
   })
   
   output$nodeTable <- renderDataTable({
-    print(currNode)
-    data <- getNodeData(currNode)
+    data <- nodeDataReactive()
     datatable(data, options = list(pageLength = 5))
   })
   
