@@ -58,6 +58,10 @@ AOTmapServer <- function(input, output, session) {
     "077"  # set a default val to start with
   reactiveValues$firstNode <- "077"
   reactiveValues$secondNode <- "067"
+  reactiveValues$markerState <- 1
+  
+  
+  
   
   nodeDataReactive <- reactive({
     tryCatch({
@@ -78,27 +82,57 @@ AOTmapServer <- function(input, output, session) {
   observeEvent(input$Normal_marker_click, {
     reactiveValues$currNode <- input$Normal_marker_click$id
     coordinates <- getNodeGeoPoints()
+    print(reactiveValues$currNode)
     currentPoint <-
-      subset(coordinates, vsn==input$Normal_marker_click$id)
+      subset(coordinates, vsn==reactiveValues$currNode)
     
-    print("this is the current node")
-    print(input$Normal_marker_click)
     
     #print(currentPoint)
     if (is.null(click))
       return()
     else
+      if((reactiveValues$markerState %% 2) != 0 ){
+        #we are keeping track of the two clicked nodes this way
+        #keep a counter so we can mod it by two to see which node we change and which one will get set back 
+        #to the original blue color
+        reactiveValues$markerState <- reactiveValues$markerState + 1
+        reactiveValues$firstNode <- reactiveValues$currNode
+        print('first')
+        
+        leafletProxy("Normal") %>% removeMarker(reactiveValues$currNode) %>% addCircleMarkers(
+          lng = currentPoint$longitude,
+          lat = currentPoint$latitude,
+          popup = currentPoint$vsn,
+          layerId = currentPoint$vsn,
+          radius = 4,
+          color = "red",
+          fillOpacity = 1
+        )
+      }
+    else if((reactiveValues$markerState %% 2) == 0 ){
+      #we are keeping track of the two clicked nodes this way
+      #keep a counter so we can mod it by two to see which node we change and which one will get set back 
+      #to the original blue color
+      reactiveValues$markerState <- reactiveValues$markerState + 1
+        reactiveValues$secondNode <- reactiveValues$currNode
+        print('second')
+        
+        leafletProxy("Normal") %>% removeMarker(reactiveValues$currNode) %>% addCircleMarkers(
+          lng = currentPoint$longitude,
+          lat = currentPoint$latitude,
+          popup = currentPoint$vsn,
+          layerId = currentPoint$vsn,
+          radius = 4,
+          color = "red",
+          fillOpacity = 1
+        )
+    }
+    
       
-      leafletProxy("Normal") %>% removeMarker(input$Normal_marker_click$id) %>% addCircleMarkers(
-        lng = currentPoint$longitude,
-        lat = currentPoint$latitude,
-        popup = currentPoint$vsn,
-        layerId = currentPoint$vsn,
-        radius = 4,
-        color = "red",
-        fillOpacity = 1
-      )
   })
+  
+  
+  
   observeEvent(input$StamenTonerMap_marker_click, {
     reactiveValues$currNode <- input$StamenTonerMap_marker_click$id
   })
@@ -108,7 +142,6 @@ AOTmapServer <- function(input, output, session) {
   
   output$Normal <- renderLeaflet({
     coordinates <- getNodeGeoPoints()
-    
     map <- leaflet()
     map <- addTiles(map)
     map <- setView(map,
