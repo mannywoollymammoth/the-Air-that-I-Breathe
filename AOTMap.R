@@ -56,6 +56,8 @@ AOTmapServer <- function(input, output, session) {
   reactiveValues <- reactiveValues()
   reactiveValues$currNode <-
     "077"  # set a default val to start with
+  reactiveValues$firstNode <- "077"
+  reactiveValues$secondNode <- "067"
   
   nodeDataReactive <- reactive({
     tryCatch({
@@ -71,6 +73,37 @@ AOTmapServer <- function(input, output, session) {
         )
       )
     })
+  })
+  
+  observeEvent(input$Normal_marker_click, {
+    reactiveValues$currNode <- input$Normal_marker_click$id
+    coordinates <- getNodeGeoPoints()
+    currentPoint <-
+      subset(coordinates, vsn==input$Normal_marker_click$id)
+    
+    print("this is the current node")
+    print(input$Normal_marker_click)
+    
+    #print(currentPoint)
+    if (is.null(click))
+      return()
+    else
+      
+      leafletProxy("Normal") %>% removeMarker(input$Normal_marker_click$id) %>% addCircleMarkers(
+        lng = currentPoint$longitude,
+        lat = currentPoint$latitude,
+        popup = currentPoint$vsn,
+        layerId = currentPoint$vsn,
+        radius = 4,
+        color = "red",
+        fillOpacity = 1
+      )
+  })
+  observeEvent(input$StamenTonerMap_marker_click, {
+    reactiveValues$currNode <- input$StamenTonerMap_marker_click$id
+  })
+  observeEvent(input$NightSky_marker_click, {
+    reactiveValues$currNode <- input$NightSky_marker_click$id
   })
   
   output$Normal <- renderLeaflet({
@@ -95,15 +128,6 @@ AOTmapServer <- function(input, output, session) {
     )
   })
   
-  observeEvent(input$Normal_marker_click, {
-    reactiveValues$currNode <- input$Normal_marker_click$id
-  })
-  
-  output$nodeTable <- renderDataTable({
-    data <- nodeDataReactive()
-    datatable(data, options = list(pageLength = 5))
-  })
-  
   
   output$StamenTonerMap <- renderLeaflet({
     coordinates <- getNodeGeoPoints()
@@ -121,10 +145,12 @@ AOTmapServer <- function(input, output, session) {
       lat = coordinates$latitude,
       radius = 4,
       color = "blue",
-      fillOpacity = 1
-    )
+      fillOpacity = 1,
+      popup = coordinates$vsn,
+      layerId = coordinates$vsn
+      
+    ) 
   })
-  
   
   output$NightSky <- renderLeaflet({
     coordinates <- getNodeGeoPoints()
@@ -136,13 +162,20 @@ AOTmapServer <- function(input, output, session) {
                    lat = 41.870,
                    zoom = 12)
     
-    map %>% addProviderTiles(providers$Esri.WorldImagery) %>% addCircleMarkers(
+    map %>% addProviderTiles(providers$Esri.WorldImagery)  %>% addCircleMarkers(
       lng = coordinates$longitude,
       lat = coordinates$latitude,
       radius = 4,
       color = "blue",
-      fillOpacity = 1
+      fillOpacity = 1,
+      popup = coordinates$vsn,
+      layerId = coordinates$vsn
     )
+  })
+  
+  output$nodeTable <- renderDataTable({
+    data <- nodeDataReactive()
+    datatable(data, options = list(pageLength = 5))
   })
   
 }
