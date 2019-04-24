@@ -57,7 +57,7 @@ AOTmapServer <- function(input, output, session) {
   reactiveValues$currNode <-
     "077"  # set a default val to start with
   reactiveValues$firstNode <- "077"
-  reactiveValues$secondNode <- "067"
+  reactiveValues$secondNode <- "004"
   reactiveValues$markerState <- 1
   
   
@@ -84,21 +84,54 @@ AOTmapServer <- function(input, output, session) {
     coordinates <- getNodeGeoPoints()
     print(reactiveValues$currNode)
     currentPoint <-
-      subset(coordinates, vsn==reactiveValues$currNode)
-    
+      subset(coordinates, vsn == reactiveValues$currNode)
+    #subset depending on the first node and the second
+    firstNode <- subset(coordinates, vsn == reactiveValues$firstNode)
+    secondNode <- subset(coordinates, vsn == reactiveValues$secondNode)
     
     #print(currentPoint)
     if (is.null(click))
       return()
-    else
-      if((reactiveValues$markerState %% 2) != 0 ){
+    else {
+      if ((reactiveValues$markerState %% 2) != 0) {
         #we are keeping track of the two clicked nodes this way
-        #keep a counter so we can mod it by two to see which node we change and which one will get set back 
+        #keep a counter so we can mod it by two to see which node we change and which one will get set back
         #to the original blue color
+        
+      
+        #change the current node to red
+        leafletProxy("Normal") %>% removeMarker(reactiveValues$currNode) %>% addCircleMarkers(
+          lng = currentPoint$longitude,
+          lat = currentPoint$latitude,
+          popup = currentPoint$vsn,
+          layerId = currentPoint$vsn,
+          radius = 4,
+          color = "red",
+          fillOpacity = 1
+        )
+        
+        #make the previous node blue 
+        leafletProxy("Normal") %>% removeMarker(reactiveValues$firstNode) %>% addCircleMarkers(
+          lng = firstNode$longitude,
+          lat = firstNode$latitude,
+          popup = firstNode$vsn,
+          layerId = firstNode$vsn,
+          radius = 4,
+          color = "blue",
+          fillOpacity = 1
+        )
+        #changing the node states
         reactiveValues$markerState <- reactiveValues$markerState + 1
         reactiveValues$firstNode <- reactiveValues$currNode
         print('first')
         
+      }
+      else if ((reactiveValues$markerState %% 2) == 0) {
+        #we are keeping track of the two clicked nodes this way
+        #keep a counter so we can mod it by two to see which node we change and which one will get set back
+        #to the original blue color
+        
+        #change the current node to red
         leafletProxy("Normal") %>% removeMarker(reactiveValues$currNode) %>% addCircleMarkers(
           lng = currentPoint$longitude,
           lat = currentPoint$latitude,
@@ -108,27 +141,25 @@ AOTmapServer <- function(input, output, session) {
           color = "red",
           fillOpacity = 1
         )
-      }
-    else if((reactiveValues$markerState %% 2) == 0 ){
-      #we are keeping track of the two clicked nodes this way
-      #keep a counter so we can mod it by two to see which node we change and which one will get set back 
-      #to the original blue color
-      reactiveValues$markerState <- reactiveValues$markerState + 1
+        
+        #make the previous node blue 
+        leafletProxy("Normal") %>% removeMarker(reactiveValues$secondNode) %>% addCircleMarkers(
+          lng = secondNode$longitude,
+          lat = secondNode$latitude,
+          popup = secondNode$vsn,
+          layerId = secondNode$vsn,
+          radius = 4,
+          color = "blue",
+          fillOpacity = 1
+        )
+        #changing the node states
+        reactiveValues$markerState <- reactiveValues$markerState + 1
         reactiveValues$secondNode <- reactiveValues$currNode
         print('second')
-        
-        leafletProxy("Normal") %>% removeMarker(reactiveValues$currNode) %>% addCircleMarkers(
-          lng = currentPoint$longitude,
-          lat = currentPoint$latitude,
-          popup = currentPoint$vsn,
-          layerId = currentPoint$vsn,
-          radius = 4,
-          color = "red",
-          fillOpacity = 1
-        )
+      }
     }
     
-      
+    
   })
   
   
@@ -182,7 +213,7 @@ AOTmapServer <- function(input, output, session) {
       popup = coordinates$vsn,
       layerId = coordinates$vsn
       
-    ) 
+    )
   })
   
   output$NightSky <- renderLeaflet({
