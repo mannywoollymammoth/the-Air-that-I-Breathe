@@ -30,6 +30,13 @@ AOTMap <- function(id) {
       )
     ),
     box(
+      title = "SO2",
+      solidHeader = TRUE,
+      status = "primary",
+      width = 8,
+      plotOutput(nameSpace("so2graph"))
+    ),
+    box(
       title = "Node 1 Data",
       solidHeader = TRUE,
       status = "primary",
@@ -66,6 +73,12 @@ AOTmapServer <- function(input, output, session) {
   reactiveValues$firstNode <- "077"
   reactiveValues$secondNode <- "004"
   reactiveValues$markerState <- 1
+  autoInvalidate <- reactiveTimer(60000) # one minute
+  
+  observe({
+    # timer runs out...
+    autoInvalidate()
+  })
   
   
   updateNodesWhenClicked <- function(currNodeId, mapType) {
@@ -270,8 +283,12 @@ AOTmapServer <- function(input, output, session) {
     })
   })
   
-  
-  
+  output$so2graph <- renderPlot({
+    autoInvalidate()
+    data <- node1DataReactive()
+    print(data)
+    ggplot(data, aes(y = data$value, x = data$timestamp)) + geom_point()
+  })
   
   
 }
