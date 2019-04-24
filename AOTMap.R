@@ -45,7 +45,7 @@ AOTMap <- function(id) {
       title = "Leaflet Map",
       width = 12,
       tabPanel("Tab1", leafletOutput(nameSpace("Normal"), height = 600)),
-      tabPanel("Tab2", leafletOutput(nameSpace("StamenTonerMap"), height = 600)),
+      tabPanel("Tab2", leafletOutput(nameSpace("StamenToner"), height = 600)),
       tabPanel("Tab3", leafletOutput(nameSpace("NightSky"), height = 600))
     )
   ))
@@ -79,12 +79,13 @@ AOTmapServer <- function(input, output, session) {
     })
   })
   
-  observeEvent(input$Normal_marker_click, {
-    reactiveValues$currNode <- input$Normal_marker_click$id
+  
+  
+  
+  updateNodesWhenClicked <- function(currNodeId, mapType){
     coordinates <- getNodeGeoPoints()
-    print(reactiveValues$currNode)
     currentPoint <-
-      subset(coordinates, vsn == reactiveValues$currNode)
+      subset(coordinates, vsn == currNodeId)
     #subset depending on the first node and the second
     firstNode <- subset(coordinates, vsn == reactiveValues$firstNode)
     secondNode <- subset(coordinates, vsn == reactiveValues$secondNode)
@@ -98,9 +99,9 @@ AOTmapServer <- function(input, output, session) {
         #keep a counter so we can mod it by two to see which node we change and which one will get set back
         #to the original blue color
         
-      
+        
         #change the current node to red
-        leafletProxy("Normal") %>% removeMarker(reactiveValues$currNode) %>% addCircleMarkers(
+        leafletProxy(mapType) %>% removeMarker(reactiveValues$currNode) %>% addCircleMarkers(
           lng = currentPoint$longitude,
           lat = currentPoint$latitude,
           popup = currentPoint$vsn,
@@ -111,7 +112,7 @@ AOTmapServer <- function(input, output, session) {
         )
         
         #make the previous node blue 
-        leafletProxy("Normal") %>% removeMarker(reactiveValues$firstNode) %>% addCircleMarkers(
+        leafletProxy(mapType) %>% removeMarker(reactiveValues$firstNode) %>% addCircleMarkers(
           lng = firstNode$longitude,
           lat = firstNode$latitude,
           popup = firstNode$vsn,
@@ -132,7 +133,7 @@ AOTmapServer <- function(input, output, session) {
         #to the original blue color
         
         #change the current node to red
-        leafletProxy("Normal") %>% removeMarker(reactiveValues$currNode) %>% addCircleMarkers(
+        leafletProxy(mapType) %>% removeMarker(reactiveValues$currNode) %>% addCircleMarkers(
           lng = currentPoint$longitude,
           lat = currentPoint$latitude,
           popup = currentPoint$vsn,
@@ -143,7 +144,7 @@ AOTmapServer <- function(input, output, session) {
         )
         
         #make the previous node blue 
-        leafletProxy("Normal") %>% removeMarker(reactiveValues$secondNode) %>% addCircleMarkers(
+        leafletProxy(mapType) %>% removeMarker(reactiveValues$secondNode) %>% addCircleMarkers(
           lng = secondNode$longitude,
           lat = secondNode$latitude,
           popup = secondNode$vsn,
@@ -158,17 +159,20 @@ AOTmapServer <- function(input, output, session) {
         print('second')
       }
     }
-    
-    
+  }
+  
+  
+  observeEvent(input$Normal_marker_click, {
+    reactiveValues$currNode <- input$Normal_marker_click$id
+    updateNodesWhenClicked(reactiveValues$currNode, "Normal")
   })
-  
-  
-  
-  observeEvent(input$StamenTonerMap_marker_click, {
-    reactiveValues$currNode <- input$StamenTonerMap_marker_click$id
+  observeEvent(input$StamenToner_marker_click, {
+    reactiveValues$currNode <- input$StamenToner_marker_click$id
+    updateNodesWhenClicked(reactiveValues$currNode, "StamenToner")
   })
   observeEvent(input$NightSky_marker_click, {
     reactiveValues$currNode <- input$NightSky_marker_click$id
+    updateNodesWhenClicked(reactiveValues$currNode, "NightSky")
   })
   
   output$Normal <- renderLeaflet({
@@ -193,7 +197,7 @@ AOTmapServer <- function(input, output, session) {
   })
   
   
-  output$StamenTonerMap <- renderLeaflet({
+  output$StamenToner <- renderLeaflet({
     coordinates <- getNodeGeoPoints()
     
     map <- leaflet()
