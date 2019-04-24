@@ -30,11 +30,18 @@ AOTMap <- function(id) {
       )
     ),
     box(
-      title = "Curr Node Data",
+      title = "Node 1 Data",
       solidHeader = TRUE,
       status = "primary",
       width = 8,
-      dataTableOutput(nameSpace("nodeTable"))
+      dataTableOutput(nameSpace("nodeTable1"), width = "100%")
+    ),
+    box(
+      title = "Node 2 Data",
+      solidHeader = TRUE,
+      status = "primary",
+      width = 8,
+      dataTableOutput(nameSpace("nodeTable2"))
     )
     
     
@@ -61,34 +68,15 @@ AOTmapServer <- function(input, output, session) {
   reactiveValues$markerState <- 1
   
   
-  
-  
-  nodeDataReactive <- reactive({
-    tryCatch({
-      getNodeData(reactiveValues$currNode)
-    },
-    error = function(cond) {
-      # TODO: lol this is a terrible way to write this code I'm sure but I couldn't figure it out
-      janky_solution = ""
-      validate(
-        need(
-          janky_solution != "",
-          "No data available for this node. Please select a different node."
-        )
-      )
-    })
-  })
-  
-  
-  
-  
-  updateNodesWhenClicked <- function(currNodeId, mapType){
+  updateNodesWhenClicked <- function(currNodeId, mapType) {
     coordinates <- getNodeGeoPoints()
     currentPoint <-
       subset(coordinates, vsn == currNodeId)
     #subset depending on the first node and the second
-    firstNode <- subset(coordinates, vsn == reactiveValues$firstNode)
-    secondNode <- subset(coordinates, vsn == reactiveValues$secondNode)
+    firstNode <-
+      subset(coordinates, vsn == reactiveValues$firstNode)
+    secondNode <-
+      subset(coordinates, vsn == reactiveValues$secondNode)
     
     #print(currentPoint)
     if (is.null(click))
@@ -111,7 +99,7 @@ AOTmapServer <- function(input, output, session) {
           fillOpacity = 1
         )
         
-        #make the previous node blue 
+        #make the previous node blue
         leafletProxy(mapType) %>% removeMarker(reactiveValues$firstNode) %>% addCircleMarkers(
           lng = firstNode$longitude,
           lat = firstNode$latitude,
@@ -143,7 +131,7 @@ AOTmapServer <- function(input, output, session) {
           fillOpacity = 1
         )
         
-        #make the previous node blue 
+        #make the previous node blue
         leafletProxy(mapType) %>% removeMarker(reactiveValues$secondNode) %>% addCircleMarkers(
           lng = secondNode$longitude,
           lat = secondNode$latitude,
@@ -241,9 +229,49 @@ AOTmapServer <- function(input, output, session) {
     )
   })
   
-  output$nodeTable <- renderDataTable({
-    data <- nodeDataReactive()
+  output$nodeTable1 <- renderDataTable({
+    data <- node1DataReactive()
     datatable(data, options = list(pageLength = 5))
   })
+  output$nodeTable2 <- renderDataTable({
+    data <- node2DataReactive()
+    datatable(data, options = list(pageLength = 5))
+  })
+  
+  node1DataReactive <- reactive({
+    tryCatch({
+      getNodeData(reactiveValues$firstNode)
+    },
+    error = function(cond) {
+      # TODO: lol this is a terrible way to write this code I'm sure but I couldn't figure it out
+      janky_solution = ""
+      validate(
+        need(
+          janky_solution != "",
+          "No data available for this node. Please select a different node."
+        )
+      )
+    })
+  })
+  
+  node2DataReactive <- reactive({
+    tryCatch({
+      getNodeData(reactiveValues$secondNode)
+    },
+    error = function(cond) {
+      # TODO: lol this is a terrible way to write this code I'm sure but I couldn't figure it out
+      janky_solution = ""
+      validate(
+        need(
+          janky_solution != "",
+          "No data available for this node. Please select a different node."
+        )
+      )
+    })
+  })
+  
+  
+  
+  
   
 }
