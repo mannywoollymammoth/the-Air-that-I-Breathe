@@ -25,7 +25,7 @@ AOTMap <- function(id) {
         nameSpace("data_selected"),
         inline = TRUE,
         "Data to show:",
-        c("CO", "SO2", "NO2", "Ozone", "PM10", "PM2.5", "Wind", "Temp"),
+        c("h2s", "so2", "o3", "no2", "co", "pm2_5", "pm10", "temperature", "intensity", "humidity"),
         selected = TRUE
       )
     ),
@@ -34,7 +34,7 @@ AOTMap <- function(id) {
       solidHeader = TRUE,
       status = "primary",
       width = 8,
-      plotOutput(nameSpace("so2graph"))
+      plotOutput(nameSpace("lineGraph"))
     ),
     box(
       title = "Node 1 Data",
@@ -67,12 +67,15 @@ AOTMap <- function(id) {
 }
 
 AOTmapServer <- function(input, output, session) {
+  dataSelectedReactive <- reactive(input$data_selected)
   reactiveValues <- reactiveValues()
   reactiveValues$currNode <-
     "077"  # set a default val to start with
   reactiveValues$firstNode <- "077"
   reactiveValues$secondNode <- "004"
   reactiveValues$markerState <- 1
+  data_selected <- reactive(input$data_selected)
+  reactiveValues$data_selected <- NULL
   autoInvalidate <- reactiveTimer(60000) # one minute
   
   observe({
@@ -253,7 +256,9 @@ AOTmapServer <- function(input, output, session) {
   
   node1DataReactive <- reactive({
     tryCatch({
-      getNodeData(reactiveValues$firstNode)
+      print("getting to getnodeData")
+      print(reactiveValues$data_selected)
+      getNodeData(reactiveValues$firstNode, reactiveValues$data_selected)
     },
     error = function(cond) {
       # TODO: lol this is a terrible way to write this code I'm sure but I couldn't figure it out
@@ -283,8 +288,9 @@ AOTmapServer <- function(input, output, session) {
     })
   })
   
-  output$so2graph <- renderPlot({
+  output$lineGraph <- renderPlot({
     autoInvalidate()
+    reactiveValues$data_selected <- data_selected()
     data <- node1DataReactive()
     print(data)
     ggplot(data, aes(y = data$value, x = data$timestamp)) + geom_point()

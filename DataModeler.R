@@ -147,13 +147,12 @@ getAOTvalue <- function(period, value) {
 }
 
 
-#coded for AOTMAP todo: 
-mapGetAOTvalue <- function(period, value) {
-  time = getTimeFromToday(period)
+getNodeData <- function(node, values) {
   
-  sensor_list = c()
-  if (value == "so2") {
+  
+  if ("so2" %in% values) {
     sensor_list <- so2_sensors
+    print("inside s02")
   }
   else if (value == "h2s") {
     sensor_list <- h2s_sensors
@@ -183,38 +182,8 @@ mapGetAOTvalue <- function(period, value) {
     sensor_list <- humidity_sensors
   }
   
-  #df <- setNames(data.frame(matrix(ncol = 5, nrow = 0)), c("timestamp", "value", "uom", "sensor_path", "node_vsn"))
   
-  #for (name in temperature_sensors) {
-  #  curr <- ls.observations(filters = list(sensor=name, timestamp=time))
-  #}
-  
-  # TODO: only gets observations for one sensor on list, not all
-  all_observations <-
-    ls.observations(filters = list(sensor = sensor_list[1], timestamp = time))
-  
-  df <-
-    data.frame(
-      timestamp = all_observations$timestamp,
-      value = all_observations$value,
-      uom = all_observations$uom,
-      sensor_path = all_observations$sensor_path,
-      node_vsn = all_observations$node_vsn
-    )
-  
-  # add address of current node
-  df$address <- apply(df, 1, getAddressOfCurrNode)
-  
-  # change format of time column
-  df$timestamp <- apply(df, 1, updateTimeFormatForPlot)
-  
-  return (df)
-}
-
-
-
-getNodeData <- function(node) {
-  obs <- ls.observations(filters = list(node = node))
+  obs <- ls.observations(filters = list(sensor = sensor_list[1], node = node))
   
   df <-
     data.frame(
