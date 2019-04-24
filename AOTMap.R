@@ -30,11 +30,18 @@ AOTMap <- function(id) {
       )
     ),
     box(
-      title = "Curr Node Data",
+      title = "Node 1 Data",
       solidHeader = TRUE,
       status = "primary",
       width = 8,
-      dataTableOutput(nameSpace("nodeTable"))
+      dataTableOutput(nameSpace("nodeTable1"), width = "100%")
+    ),
+    box(
+      title = "Node 2 Data",
+      solidHeader = TRUE,
+      status = "primary",
+      width = 8,
+      dataTableOutput(nameSpace("nodeTable2"))
     )
     
     
@@ -45,7 +52,7 @@ AOTMap <- function(id) {
       title = "Leaflet Map",
       width = 12,
       tabPanel("Tab1", leafletOutput(nameSpace("Normal"), height = 600)),
-      tabPanel("Tab2", leafletOutput(nameSpace("StamenTonerMap"), height = 600)),
+      tabPanel("Tab2", leafletOutput(nameSpace("StamenToner"), height = 600)),
       tabPanel("Tab3", leafletOutput(nameSpace("NightSky"), height = 600))
     )
   ))
@@ -56,26 +63,108 @@ AOTmapServer <- function(input, output, session) {
   reactiveValues <- reactiveValues()
   reactiveValues$currNode <-
     "077"  # set a default val to start with
+  reactiveValues$firstNode <- "077"
+  reactiveValues$secondNode <- "004"
+  reactiveValues$markerState <- 1
   
-  nodeDataReactive <- reactive({
-    tryCatch({
-      getNodeData(reactiveValues$currNode)
-    },
-    error = function(cond) {
-      # TODO: lol this is a terrible way to write this code I'm sure but I couldn't figure it out
-      janky_solution = ""
-      validate(
-        need(
-          janky_solution != "",
-          "No data available for this node. Please select a different node."
+  
+  updateNodesWhenClicked <- function(currNodeId, mapType) {
+    coordinates <- getNodeGeoPoints()
+    currentPoint <-
+      subset(coordinates, vsn == currNodeId)
+    #subset depending on the first node and the second
+    firstNode <-
+      subset(coordinates, vsn == reactiveValues$firstNode)
+    secondNode <-
+      subset(coordinates, vsn == reactiveValues$secondNode)
+    
+    #print(currentPoint)
+    if (is.null(click))
+      return()
+    else {
+      if ((reactiveValues$markerState %% 2) != 0) {
+        #we are keeping track of the two clicked nodes this way
+        #keep a counter so we can mod it by two to see which node we change and which one will get set back
+        #to the original blue color
+        
+        
+        #change the current node to red
+        leafletProxy(mapType) %>% removeMarker(reactiveValues$currNode) %>% addCircleMarkers(
+          lng = currentPoint$longitude,
+          lat = currentPoint$latitude,
+          popup = currentPoint$vsn,
+          layerId = currentPoint$vsn,
+          radius = 4,
+          color = "red",
+          fillOpacity = 1
         )
-      )
-    })
+        
+        #make the previous node blue
+        leafletProxy(mapType) %>% removeMarker(reactiveValues$firstNode) %>% addCircleMarkers(
+          lng = firstNode$longitude,
+          lat = firstNode$latitude,
+          popup = firstNode$vsn,
+          layerId = firstNode$vsn,
+          radius = 4,
+          color = "blue",
+          fillOpacity = 1
+        )
+        #changing the node states
+        reactiveValues$markerState <- reactiveValues$markerState + 1
+        reactiveValues$firstNode <- reactiveValues$currNode
+        print('first')
+        
+      }
+      else if ((reactiveValues$markerState %% 2) == 0) {
+        #we are keeping track of the two clicked nodes this way
+        #keep a counter so we can mod it by two to see which node we change and which one will get set back
+        #to the original blue color
+        
+        #change the current node to red
+        leafletProxy(mapType) %>% removeMarker(reactiveValues$currNode) %>% addCircleMarkers(
+          lng = currentPoint$longitude,
+          lat = currentPoint$latitude,
+          popup = currentPoint$vsn,
+          layerId = currentPoint$vsn,
+          radius = 4,
+          color = "red",
+          fillOpacity = 1
+        )
+        
+        #make the previous node blue
+        leafletProxy(mapType) %>% removeMarker(reactiveValues$secondNode) %>% addCircleMarkers(
+          lng = secondNode$longitude,
+          lat = secondNode$latitude,
+          popup = secondNode$vsn,
+          layerId = secondNode$vsn,
+          radius = 4,
+          color = "blue",
+          fillOpacity = 1
+        )
+        #changing the node states
+        reactiveValues$markerState <- reactiveValues$markerState + 1
+        reactiveValues$secondNode <- reactiveValues$currNode
+        print('second')
+      }
+    }
+  }
+  
+  
+  observeEvent(input$Normal_marker_click, {
+    reactiveValues$currNode <- input$Normal_marker_click$id
+    updateNodesWhenClicked(reactiveValues$currNode, "Normal")
+  })
+  observeEvent(input$StamenToner_marker_click, {
+    reactiveValues$currNode <- input$StamenToner_marker_click$id
+    updateNodesWhenClicked(reactiveValues$currNode, "StamenToner")
+  })
+  observeEvent(input$NightSky_marker_click, {
+    reactiveValues$currNode <- input$NightSky_marker_click$id
+    updateNodesWhenClicked(reactiveValues$currNode, "NightSky")
   })
   
   output$Normal <- renderLeaflet({
     coordinates <- getNodeGeoPoints()
-    
     map <- leaflet()
     map <- addTiles(map)
     map <- setView(map,
@@ -95,17 +184,8 @@ AOTmapServer <- function(input, output, session) {
     )
   })
   
-  observeEvent(input$Normal_marker_click, {
-    reactiveValues$currNode <- input$Normal_marker_click$id
-  })
   
-  output$nodeTable <- renderDataTable({
-    data <- nodeDataReactive()
-    datatable(data, options = list(pageLength = 5))
-  })
-  
-  
-  output$StamenTonerMap <- renderLeaflet({
+  output$StamenToner <- renderLeaflet({
     coordinates <- getNodeGeoPoints()
     
     map <- leaflet()
@@ -121,10 +201,12 @@ AOTmapServer <- function(input, output, session) {
       lat = coordinates$latitude,
       radius = 4,
       color = "blue",
-      fillOpacity = 1
+      fillOpacity = 1,
+      popup = coordinates$vsn,
+      layerId = coordinates$vsn
+      
     )
   })
-  
   
   output$NightSky <- renderLeaflet({
     coordinates <- getNodeGeoPoints()
@@ -136,13 +218,60 @@ AOTmapServer <- function(input, output, session) {
                    lat = 41.870,
                    zoom = 12)
     
-    map %>% addProviderTiles(providers$Esri.WorldImagery) %>% addCircleMarkers(
+    map %>% addProviderTiles(providers$Esri.WorldImagery)  %>% addCircleMarkers(
       lng = coordinates$longitude,
       lat = coordinates$latitude,
       radius = 4,
       color = "blue",
-      fillOpacity = 1
+      fillOpacity = 1,
+      popup = coordinates$vsn,
+      layerId = coordinates$vsn
     )
   })
+  
+  output$nodeTable1 <- renderDataTable({
+    data <- node1DataReactive()
+    datatable(data, options = list(pageLength = 5))
+  })
+  output$nodeTable2 <- renderDataTable({
+    data <- node2DataReactive()
+    datatable(data, options = list(pageLength = 5))
+  })
+  
+  node1DataReactive <- reactive({
+    tryCatch({
+      getNodeData(reactiveValues$firstNode)
+    },
+    error = function(cond) {
+      # TODO: lol this is a terrible way to write this code I'm sure but I couldn't figure it out
+      janky_solution = ""
+      validate(
+        need(
+          janky_solution != "",
+          "No data available for this node. Please select a different node."
+        )
+      )
+    })
+  })
+  
+  node2DataReactive <- reactive({
+    tryCatch({
+      getNodeData(reactiveValues$secondNode)
+    },
+    error = function(cond) {
+      # TODO: lol this is a terrible way to write this code I'm sure but I couldn't figure it out
+      janky_solution = ""
+      validate(
+        need(
+          janky_solution != "",
+          "No data available for this node. Please select a different node."
+        )
+      )
+    })
+  })
+  
+  
+  
+  
   
 }
