@@ -293,7 +293,18 @@ AOTmapServer <- function(input, output, session) {
     reactiveValues$data_selected <- data_selected()
     data <- node1DataReactive()
     print(data)
-    ggplot(data, aes(y = data$so2Value, x = data$timestamp)) + geom_point()
+    #ggplot(data, aes(y = data$so2Value, x = data$timestamp)) + geom_point()
+    #ggplot() + geom_line(data = data, aes(y = data$so2Value, x = data$timestamp)) + ylim(c(-30, 0))
+    #plot <- ggplot() + geom_line(data = data, aes(y = data$so2Value, x = data$timestamp, group = 1)) + ylim(c(-70, 0))
+    plot <- ggplot() 
+    
+    if ("so2" %in% data_selected()) {
+      plot <- plot + geom_line(data = data, aes(y = data$so2Value, x = data$timestamp, group = 1)) + ylim(c(-70, 0))
+    }
+    plot
+    
+    
+    
   })
   
   
