@@ -299,7 +299,10 @@ AOTmapServer <- function(input, output, session) {
     plot <- ggplot() 
     
     if ("so2" %in% data_selected()) {
-      plot <- plot + geom_line(data = data, aes(y = data$so2Value, x = data$timestamp, group = 1)) + ylim(c(-70, 0))
+      plot <- plot + geom_line(data = data, aes(y = data$so2Value, x = data$timestamp, group = 1), color = "blue") 
+    }
+    if ("h2s" %in% data_selected()) {
+      plot <- plot + geom_line(data = data, aes(y = data$h2sValue, x = data$timestamp, group = 1))
     }
     plot
     
