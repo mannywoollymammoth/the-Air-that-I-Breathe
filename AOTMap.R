@@ -25,9 +25,16 @@ AOTMap <- function(id) {
         nameSpace("data_selected"),
         inline = TRUE,
         "Data to show:",
-        c("CO", "SO2", "NO2", "Ozone", "PM10", "PM2.5", "Wind", "Temp"),
+        c("h2s", "so2", "o3", "no2", "co", "pm2_5", "pm10", "temperature", "intensity", "humidity"),
         selected = TRUE
       )
+    ),
+    box(
+      title = "SO2",
+      solidHeader = TRUE,
+      status = "primary",
+      width = 8,
+      plotOutput(nameSpace("lineGraph"))
     ),
     box(
       title = "Node 1 Data",
@@ -60,12 +67,21 @@ AOTMap <- function(id) {
 }
 
 AOTmapServer <- function(input, output, session) {
+  dataSelectedReactive <- reactive(input$data_selected)
   reactiveValues <- reactiveValues()
   reactiveValues$currNode <-
     "077"  # set a default val to start with
   reactiveValues$firstNode <- "077"
   reactiveValues$secondNode <- "004"
   reactiveValues$markerState <- 1
+  data_selected <- reactive(input$data_selected)
+  reactiveValues$data_selected <- NULL
+  autoInvalidate <- reactiveTimer(60000) # one minute
+  
+  observe({
+    # timer runs out...
+    autoInvalidate()
+  })
   
   
   updateNodesWhenClicked <- function(currNodeId, mapType) {
@@ -240,7 +256,9 @@ AOTmapServer <- function(input, output, session) {
   
   node1DataReactive <- reactive({
     tryCatch({
-      getNodeData(reactiveValues$firstNode)
+      #print("getting to getnodeData")
+      #print(reactiveValues$data_selected)
+      getNodeData(reactiveValues$firstNode, reactiveValues$data_selected)
     },
     error = function(cond) {
       # TODO: lol this is a terrible way to write this code I'm sure but I couldn't figure it out
@@ -270,8 +288,39 @@ AOTmapServer <- function(input, output, session) {
     })
   })
   
-  
-  
+  output$lineGraph <- renderPlot({
+    autoInvalidate()
+    reactiveValues$data_selected <- data_selected()
+    data <- node1DataReactive()
+    print(data)
+    
+    plot <- ggplot() 
+    if ("so2" %in% data_selected()) {
+      plot <- plot + geom_line(data = data, aes(y = data$so2Value, x = data$timestamp, group = 1), color = "blue") 
+    }
+    if ("h2s" %in% data_selected()) {
+      plot <- plot + geom_line(data = data, aes(y = data$h2sValue, x = data$timestamp, group = 1), color = "red")
+    }
+    if ("o3" %in% data_selected()) {
+      plot <- plot + geom_line(data = data, aes(y = data$o3Value, x = data$timestamp, group = 1), color = "green")
+    }
+    if ("no2" %in% data_selected()) {
+      plot <- plot + geom_line(data = data, aes(y = data$no2Value, x = data$timestamp, group = 1), color = "orange")
+    }
+    if ("co" %in% data_selected()) {
+      plot <- plot + geom_line(data = data, aes(y = data$coValue, x = data$timestamp, group = 1))
+    }
+    if ("pm2_5" %in% data_selected()) {
+      plot <- plot + geom_line(data = data, aes(y = data$pm2_5Value, x = data$timestamp, group = 1))
+    }
+    if ("pm10" %in% data_selected()) {
+      plot <- plot + geom_line(data = data, aes(y = data$pm10Value, x = data$timestamp, group = 1))
+    }
+    plot
+    
+    
+    
+  })
   
   
 }

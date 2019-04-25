@@ -146,17 +146,76 @@ getAOTvalue <- function(period, value) {
   return (df)
 }
 
-getNodeData <- function(node) {
-  obs <- ls.observations(filters = list(node = node))
+
+getNodeData <- function(node, values) {
   
+  
+  obs <- ls.observations(filters = list(sensor = o3_sensors[1], node = node))
   df <-
     data.frame(
       timestamp = obs$timestamp,
-      value = obs$value,
       uom = obs$uom,
-      sensor_path = obs$sensor_path,
+      #sensor_path = obs$sensor_path,
       node_vsn = obs$node_vsn
     )
+  
+  parsed_sensor_list <- list()
+  if ("so2" %in% values) {
+    sensor_list <- so2_sensors
+    so2 <- ls.observations(filters = list(sensor = sensor_list[1], node = node))
+    df$so2Value = so2$value
+    
+  }
+  if ("h2s" %in% values) {
+    
+    sensor_list <- h2s_sensors
+    h2s <- ls.observations(filters = list(sensor = sensor_list[1], node = node))
+    df$h2sValue = h2s$value
+  }
+  
+  if ("o3" %in% values) {
+    sensor_list <- o3_sensors
+    o3 <- ls.observations(filters = list(sensor = sensor_list[1], node = node))
+    df$o3Value = o3$value
+  }
+  
+  if ("no2" %in% values) {
+    sensor_list <- no2_sensors
+    no2 <- ls.observations(filters = list(sensor = sensor_list[1], node = node))
+    df$no2Value = no2$value
+  }
+  if ("co" %in% values) {
+    sensor_list <- co_sensors
+    co <- ls.observations(filters = list(sensor = sensor_list[1], node = node))
+    df$coValue = co$value
+  }
+  if ("pm2_5" %in% values) {
+    sensor_list <- pm2_5_sensors
+    pm2_5 <- ls.observations(filters = list(sensor = sensor_list[1], node = node))
+    df$pm2_5Value = pm2_5$value
+  }
+  if ("pm10" %in% values) {
+    sensor_list <- pm10_sensors
+    pm10 <- ls.observations(filters = list(sensor = sensor_list[1], node = node))
+    print(pm10)
+    df$pm10Value = pm10$value
+  }
+  if ("temperature" %in% values) {
+    
+    sensor_list <- temperature_sensors
+  }
+  if ("intensity" %in% values) {
+    
+    sensor_list <- intensity_sensors
+  }
+  if ("humidity" %in% values) {
+    
+    sensor_list <- humidity_sensors
+  }
+  
+  #print(obs)
+  
+  
   
   # add address of current node
   df$address <- apply(df, 1, getAddressOfCurrNode)
