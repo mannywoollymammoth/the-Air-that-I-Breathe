@@ -148,51 +148,72 @@ getAOTvalue <- function(period, value) {
 
 
 getNodeData <- function(node, values) {
+  print("here in the beginning")
   
-  
-  if ("so2" %in% values) {
-    sensor_list <- so2_sensors
-    print("inside s02")
-  }
-  else if (value == "h2s") {
-    sensor_list <- h2s_sensors
-  }
-  else if (value == "o3") {
-    sensor_list <- o3_sensors
-  }
-  else if (value == "no2") {
-    sensor_list <- no2_sensors
-  }
-  else if (value == "co") {
-    sensor_list <- co_sensors
-  }
-  else if (value == "pm2_5") {
-    sensor_list <- pm2_5_sensors
-  }
-  else if (value == "pm10") {
-    sensor_list <- pm10_sensors
-  }
-  else if (value == "temperature") {
-    sensor_list <- temperature_sensors
-  }
-  else if (value == "intensity") {
-    sensor_list <- intensity_sensors
-  }
-  else if (value == "humidity") {
-    sensor_list <- humidity_sensors
-  }
-  
-  
-  obs <- ls.observations(filters = list(sensor = sensor_list[1], node = node))
-  
+  obs <- ls.observations(filters = list(sensor = o3_sensors[1], node = node))
   df <-
     data.frame(
       timestamp = obs$timestamp,
-      value = obs$value,
       uom = obs$uom,
-      sensor_path = obs$sensor_path,
+      #sensor_path = obs$sensor_path,
       node_vsn = obs$node_vsn
     )
+  
+  parsed_sensor_list <- list()
+  if ("so2" %in% values) {
+    sensor_list <- so2_sensors
+    so2 <- ls.observations(filters = list(sensor = sensor_list[1], node = node))
+    df$so2Value = so2$value
+    print("here after assigning")
+  }
+  if ("h2s" %in% values) {
+    print("here anyways")
+    sensor_list <- h2s_sensors
+    h2s <- ls.observations(filters = list(sensor = sensor_list[1], node = node))
+    df$h2sValue = h2s$value
+  }
+  
+  if ("o3" %in% values) {
+    sensor_list <- o3_sensors
+    o3 <- ls.observations(filters = list(sensor = sensor_list[1], node = node))
+    df$o3Value = o3$value
+  }
+  
+  if ("no2" %in% values) {
+    sensor_list <- no2_sensors
+    no2 <- ls.observations(filters = list(sensor = sensor_list[1], node = node))
+    df$no2Value = no2$value
+  }
+  if ("co" %in% values) {
+    sensor_list <- co_sensors
+    co <- ls.observations(filters = list(sensor = sensor_list[1], node = node))
+    df$coValue = co$value
+  }
+  if ("pm2_5" %in% values) {
+    sensor_list <- pm2_5_sensors
+    pm2_5 <- ls.observations(filters = list(sensor = sensor_list[1], node = node))
+    df$pm2_5Value = pm2_5$value
+  }
+  if ("pm10" %in% values) {
+    
+    sensor_list <- pm10_sensors
+  }
+  if ("temperature" %in% values) {
+    
+    sensor_list <- temperature_sensors
+  }
+  if ("intensity" %in% values) {
+    
+    sensor_list <- intensity_sensors
+  }
+  if ("humidity" %in% values) {
+    
+    sensor_list <- humidity_sensors
+  }
+  
+  #print(obs)
+  
+  
   
   # add address of current node
   df$address <- apply(df, 1, getAddressOfCurrNode)
@@ -200,6 +221,7 @@ getNodeData <- function(node, values) {
   # change format of time column
   df$timestamp <- apply(df, 1, updateTimeFormatForPlot)
   
+  print("here anyways")
   return(df)
   
 }

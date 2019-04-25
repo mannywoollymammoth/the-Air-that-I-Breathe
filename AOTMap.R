@@ -256,8 +256,8 @@ AOTmapServer <- function(input, output, session) {
   
   node1DataReactive <- reactive({
     tryCatch({
-      print("getting to getnodeData")
-      print(reactiveValues$data_selected)
+      #print("getting to getnodeData")
+      #print(reactiveValues$data_selected)
       getNodeData(reactiveValues$firstNode, reactiveValues$data_selected)
     },
     error = function(cond) {
@@ -293,7 +293,7 @@ AOTmapServer <- function(input, output, session) {
     reactiveValues$data_selected <- data_selected()
     data <- node1DataReactive()
     print(data)
-    ggplot(data, aes(y = data$value, x = data$timestamp)) + geom_point()
+    ggplot(data, aes(y = data$so2Value, x = data$timestamp)) + geom_point()
   })
   
   
