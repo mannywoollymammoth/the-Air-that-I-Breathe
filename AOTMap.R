@@ -293,16 +293,28 @@ AOTmapServer <- function(input, output, session) {
     reactiveValues$data_selected <- data_selected()
     data <- node1DataReactive()
     print(data)
-    #ggplot(data, aes(y = data$so2Value, x = data$timestamp)) + geom_point()
-    #ggplot() + geom_line(data = data, aes(y = data$so2Value, x = data$timestamp)) + ylim(c(-30, 0))
-    #plot <- ggplot() + geom_line(data = data, aes(y = data$so2Value, x = data$timestamp, group = 1)) + ylim(c(-70, 0))
-    plot <- ggplot() 
     
+    plot <- ggplot() 
     if ("so2" %in% data_selected()) {
       plot <- plot + geom_line(data = data, aes(y = data$so2Value, x = data$timestamp, group = 1), color = "blue") 
     }
     if ("h2s" %in% data_selected()) {
-      plot <- plot + geom_line(data = data, aes(y = data$h2sValue, x = data$timestamp, group = 1))
+      plot <- plot + geom_line(data = data, aes(y = data$h2sValue, x = data$timestamp, group = 1), color = "red")
+    }
+    if ("o3" %in% data_selected()) {
+      plot <- plot + geom_line(data = data, aes(y = data$o3Value, x = data$timestamp, group = 1), color = "green")
+    }
+    if ("no2" %in% data_selected()) {
+      plot <- plot + geom_line(data = data, aes(y = data$no2Value, x = data$timestamp, group = 1), color = "orange")
+    }
+    if ("co" %in% data_selected()) {
+      plot <- plot + geom_line(data = data, aes(y = data$coValue, x = data$timestamp, group = 1))
+    }
+    if ("pm2_5" %in% data_selected()) {
+      plot <- plot + geom_line(data = data, aes(y = data$pm2_5Value, x = data$timestamp, group = 1))
+    }
+    if ("pm10" %in% data_selected()) {
+      plot <- plot + geom_line(data = data, aes(y = data$pm10Value, x = data$timestamp, group = 1))
     }
     plot
     

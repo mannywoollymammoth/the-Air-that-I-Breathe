@@ -148,7 +148,7 @@ getAOTvalue <- function(period, value) {
 
 
 getNodeData <- function(node, values) {
-  print("here in the beginning")
+  
   
   obs <- ls.observations(filters = list(sensor = o3_sensors[1], node = node))
   df <-
@@ -164,10 +164,10 @@ getNodeData <- function(node, values) {
     sensor_list <- so2_sensors
     so2 <- ls.observations(filters = list(sensor = sensor_list[1], node = node))
     df$so2Value = so2$value
-    print("here after assigning")
+    
   }
   if ("h2s" %in% values) {
-    print("here anyways")
+    
     sensor_list <- h2s_sensors
     h2s <- ls.observations(filters = list(sensor = sensor_list[1], node = node))
     df$h2sValue = h2s$value
@@ -195,8 +195,10 @@ getNodeData <- function(node, values) {
     df$pm2_5Value = pm2_5$value
   }
   if ("pm10" %in% values) {
-    
     sensor_list <- pm10_sensors
+    pm10 <- ls.observations(filters = list(sensor = sensor_list[1], node = node))
+    print(pm10)
+    df$pm10Value = pm10$value
   }
   if ("temperature" %in% values) {
     
@@ -221,7 +223,6 @@ getNodeData <- function(node, values) {
   # change format of time column
   df$timestamp <- apply(df, 1, updateTimeFormatForPlot)
   
-  print("here anyways")
   return(df)
   
 }
