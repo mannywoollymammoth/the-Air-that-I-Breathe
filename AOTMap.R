@@ -7,6 +7,7 @@ library(jpeg)
 library(grid)
 library(leaflet)
 library(scales)
+library(RColorBrewer)
 
 source('DataModeler.R')
 
@@ -25,7 +26,7 @@ AOTMap <- function(id) {
         nameSpace("data_selected"),
         inline = TRUE,
         "Data to show:",
-        c("h2s", "so2", "o3", "no2", "co", "pm2_5", "pm10", "temperature", "intensity", "humidity"),
+        c( "so2", "h2s", "o3", "no2", "co", "pm2_5", "pm10", "temperature", "intensity", "humidity"),
         selected = TRUE
       )
     ),
@@ -69,8 +70,9 @@ AOTMap <- function(id) {
 AOTmapServer <- function(input, output, session) {
   dataSelectedReactive <- reactive(input$data_selected)
   reactiveValues <- reactiveValues()
-  reactiveValues$currNode <-
-    "077"  # set a default val to start with
+  
+  # set a default val to start with
+  reactiveValues$currNode <-"077" 
   reactiveValues$firstNode <- "077"
   reactiveValues$secondNode <- "004"
   reactiveValues$markerState <- 1
@@ -274,7 +276,7 @@ AOTmapServer <- function(input, output, session) {
   
   node2DataReactive <- reactive({
     tryCatch({
-      getNodeData(reactiveValues$secondNode)
+      getNodeData(reactiveValues$secondNode, reactiveValues$data_selected)
     },
     error = function(cond) {
       # TODO: lol this is a terrible way to write this code I'm sure but I couldn't figure it out
@@ -291,31 +293,45 @@ AOTmapServer <- function(input, output, session) {
   output$lineGraph <- renderPlot({
     autoInvalidate()
     reactiveValues$data_selected <- data_selected()
-    data <- node1DataReactive()
-    print(data)
+    node1Data <- node1DataReactive()
+    node2Data <- node2DataReactive()
     
-    plot <- ggplot() 
+    node1Colors <-brewer.pal(n=6,name = 'OrRd')
+    node2Colors <-brewer.pal(n=6,name = 'BuPu')
+    
+    plot <- ggplot() + ylim(-20, 20)
+    
+    
+    
+    
     if ("so2" %in% data_selected()) {
-      plot <- plot + geom_line(data = data, aes(y = data$so2Value, x = data$timestamp, group = 1), color = "blue") 
+      plot <- plot + geom_line(data = node1Data, aes(y = node1Data$so2Value, x = node1Data$timestamp, group = 1), color = node1Colors[1]) 
+      plot <- plot + geom_line(data = node1Data, aes(y = node2Data$so2Value, x = node1Data$timestamp, group = 1), color = node2Colors[1]) 
     }
     if ("h2s" %in% data_selected()) {
-      plot <- plot + geom_line(data = data, aes(y = data$h2sValue, x = data$timestamp, group = 1), color = "red")
+      plot <- plot + geom_line(data = node1Data, aes(y = node1Data$h2sValue, x = node1Data$timestamp, group = 1), color = node1Colors[2])
+      plot <- plot + geom_line(data = node1Data, aes(y = node2Data$h2sValue, x = node1Data$timestamp, group = 1), color = node2Colors[2]) 
     }
     if ("o3" %in% data_selected()) {
-      plot <- plot + geom_line(data = data, aes(y = data$o3Value, x = data$timestamp, group = 1), color = "green")
+      plot <- plot + geom_line(data = node1Data, aes(y = node1Data$o3Value, x = node1Data$timestamp, group = 1), color = node1Colors[3])
+      plot <- plot + geom_line(data = node1Data, aes(y = node2Data$o3Value, x = node1Data$timestamp, group = 1), color = node2Colors[3]) 
     }
     if ("no2" %in% data_selected()) {
-      plot <- plot + geom_line(data = data, aes(y = data$no2Value, x = data$timestamp, group = 1), color = "orange")
+      plot <- plot + geom_line(data = node1Data, aes(y = node1Data$no2Value, x = node1Data$timestamp, group = 1), color = node1Colors[4])
+      plot <- plot + geom_line(data = node1Data, aes(y = node2Data$no2Value, x = node1Data$timestamp, group = 1), color = node2Colors[4]) 
     }
     if ("co" %in% data_selected()) {
-      plot <- plot + geom_line(data = data, aes(y = data$coValue, x = data$timestamp, group = 1))
+      plot <- plot + geom_line(data = node1Data, aes(y = node1Data$coValue, x = node1Data$timestamp, group = 1), color = node1Colors[5])
+      plot <- plot + geom_line(data = node1Data, aes(y = node2Data$coValue, x = node1Data$timestamp, group = 1), color = node2Colors[5]) 
     }
     if ("pm2_5" %in% data_selected()) {
-      plot <- plot + geom_line(data = data, aes(y = data$pm2_5Value, x = data$timestamp, group = 1))
+      plot <- plot + geom_line(data = node1Data, aes(y = node1Data$pm2_5Value, x = node1Data$timestamp, group = 1), color = node1Colors[6])
+      plot <- plot + geom_line(data = node1Data, aes(y = node2Data$pm2_5Value, x = node1Data$timestamp, group = 1), color = node2Colors[6]) 
     }
     if ("pm10" %in% data_selected()) {
-      plot <- plot + geom_line(data = data, aes(y = data$pm10Value, x = data$timestamp, group = 1))
+      plot <- plot + geom_line(data = node1Data, aes(y = node1Data$pm10Value, x = node1Data$timestamp, group = 1))
     }
+    plot <-  plot + theme_dark()
     plot
     
     
