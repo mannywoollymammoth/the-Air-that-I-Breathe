@@ -202,7 +202,6 @@ getNodeData <- function(node, values) {
   if ("pm10" %in% values) {
     sensor_list <- pm10_sensors
     pm10 <- ls.observations(filters = list(sensor = sensor_list[1], node = node))
-    print(pm10)
     df$pm10Value = pm10$value
   }
   if ("temperature" %in% values) {
@@ -266,8 +265,6 @@ getNodeTemps <- function() {
 getNodeDarkSkyData <- function(period, lat, long) {
   # get data based on the time period requested and the lat/long of the current node
   time = getTimeFromToday(period)
-  print("TIMEEEEE")
-  print(time)
   
   curr = NULL
   
@@ -292,7 +289,6 @@ getNodeDarkSkyData <- function(period, lat, long) {
       time = strftime(time, tz = "UTC", format = "%Y-%m-%dT%H:%M:%S")
       
       curr2 <- get_forecast_for(lat, long, time)$hourly
-      print(curr2)
       
       curr2 <- data.frame(
         time = curr2$time,
@@ -312,7 +308,6 @@ getNodeDarkSkyData <- function(period, lat, long) {
   } else if (period=="day") {
     curr <- get_forecast_for(lat, long, time)$hourly
   } else {
-    print("I don't know how to just do current lol?")
   }
   
   #TODO: on the website it says he wanted the ozone as well.. but that's not an option....?
