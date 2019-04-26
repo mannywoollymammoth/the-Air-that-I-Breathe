@@ -67,22 +67,54 @@ AOTMap <- function(id) {
       )
     ),
     
-    box(
+    tabBox(
       title = "Node 1 Data",
-      solidHeader = TRUE,
-      status = "primary",
+      id = "tabset2",
       width = 8,
-      dataTableOutput(nameSpace("nodeTable1"), width = "100%")
+      height = 550,
+      tabPanel(
+        "AOT Data",
+        box(
+          solidHeader = TRUE,
+          status = "primary",
+          width = 12,
+          dataTableOutput(nameSpace("nodeTable1"), width = "100%")
+        )
+      ),
+      tabPanel(
+        "Dark Sky Data",
+        box(
+          solidHeader = TRUE,
+          status = "primary",
+          width = 12,
+          dataTableOutput(nameSpace("darkSkyTableNode1Day"), width = "100%")
+        )
+      )
     ),
-    box(
+    tabBox(
       title = "Node 2 Data",
-      solidHeader = TRUE,
-      status = "primary",
+      id = "tabset3",
       width = 8,
-      dataTableOutput(nameSpace("nodeTable2"))
+      height = 550,
+      tabPanel(
+        "AOT Data",
+        box(
+          solidHeader = TRUE,
+          status = "primary",
+          width = 12,
+          dataTableOutput(nameSpace("nodeTable2"), width = "100%")
+        )
+      ),
+      tabPanel(
+        "Dark Sky Data",
+        box(
+          solidHeader = TRUE,
+          status = "primary",
+          width = 12,
+          dataTableOutput(nameSpace("darkSkyTableNode2Day"), width = "100%")
+        )
+      )
     )
-    
-    
   ),
   column(
     5,
@@ -103,18 +135,90 @@ AOTmapServer <- function(input, output, session) {
   
   # set a default val to start with
   reactiveValues$currNode <- "077"
+  
   reactiveValues$firstNode <- "077"
   reactiveValues$secondNode <- "004"
+  
+  reactiveValues$currNodeLat <- 41.83107
+  reactiveValues$currNodeLong <- -87.6173
+  
+  reactiveValues$curr1NodeLat <- 41.83107
+  reactiveValues$curr1NodeLong <- -87.6173
+  
+  reactiveValues$curr2NodeLat <- 41.87838
+  reactiveValues$curr2NodeLong <- -87.62768
+  
   reactiveValues$markerState <- 1
   data_selected <- reactive(input$data_selected)
   reactiveValues$data_selected <- NULL
   autoInvalidate <- reactiveTimer(60000) # one minute
   
+  node1CurrentDataReactive <- reactive({
+    tryCatch({
+      getNodeData(reactiveValues$firstNode,
+                  reactiveValues$data_selected)
+    },
+    error = function(cond) {
+      showErrorMessageForNoNodeData()
+    })
+  })
+  
+  node2CurrentDataReactive <- reactive({
+    tryCatch({
+      getNodeData(reactiveValues$secondNode,
+                  reactiveValues$data_selected)
+    },
+    error = function(cond) {
+      showErrorMessageForNoNodeData()
+    })
+  })
+  
+  node1weekDataReactive <- reactive({
+    tryCatch({
+      getNodeData7Days(reactiveValues$firstNode,
+                       reactiveValues$data_selected)
+    },
+    error = function(cond) {
+      showErrorMessageForNoNodeData()
+    })
+  })
+  
+  node2weekDataReactive <- reactive({
+    tryCatch({
+      getNodeData7Days(reactiveValues$secondNode,
+                       reactiveValues$data_selected)
+    },
+    error = function(cond) {
+      showErrorMessageForNoNodeData()
+    })
+  })
+  
+  darkSkyNodeDataNode1DayReactive <- reactive({
+
+    tryCatch({
+      getNodeDarkSkyData("day", reactiveValues$curr1NodeLat, reactiveValues$curr1NodeLong)
+    },
+    error = function(cond) {
+      showErrorMessageForNoNodeData()
+    })
+  })
+  
+  darkSkyNodeDataNode2DayReactive <- reactive({
+    
+    tryCatch({
+      getNodeDarkSkyData("day", reactiveValues$curr2NodeLat, reactiveValues$curr2NodeLong)
+    },
+    error = function(cond) {
+      showErrorMessageForNoNodeData()
+    })
+  })
+  
+  # ============================================ observe/update nodes
+  
   observe({
     # timer runs out...
     autoInvalidate()
   })
-  
   
   updateNodesWhenClicked <- function(currNodeId, mapType) {
     coordinates <- getNodeGeoPoints()
@@ -126,7 +230,6 @@ AOTmapServer <- function(input, output, session) {
     secondNode <-
       subset(coordinates, vsn == reactiveValues$secondNode)
     
-    #print(currentPoint)
     if (is.null(click))
       return()
     else {
@@ -160,8 +263,9 @@ AOTmapServer <- function(input, output, session) {
         #changing the node states
         reactiveValues$markerState <- reactiveValues$markerState + 1
         reactiveValues$firstNode <- reactiveValues$currNode
-        #print('first')
         
+        reactiveValues$curr1NodeLat <- reactiveValues$currNodeLat
+        reactiveValues$curr1NodeLong <- reactiveValues$currNodeLong
       }
       else if ((reactiveValues$markerState %% 2) == 0) {
         #we are keeping track of the two clicked nodes this way
@@ -192,24 +296,43 @@ AOTmapServer <- function(input, output, session) {
         #changing the node states
         reactiveValues$markerState <- reactiveValues$markerState + 1
         reactiveValues$secondNode <- reactiveValues$currNode
-        #print('second')
+        
+        reactiveValues$curr2NodeLat <- reactiveValues$currNodeLat
+        reactiveValues$curr2NodeLong <- reactiveValues$currNodeLong
       }
     }
   }
   
-  
   observeEvent(input$Normal_marker_click, {
     reactiveValues$currNode <- input$Normal_marker_click$id
+    reactiveValues$currNodeLat <- input$Normal_marker_click$lat
+    reactiveValues$currNodeLong <- input$Normal_marker_click$lng
+    
     updateNodesWhenClicked(reactiveValues$currNode, "Normal")
   })
   observeEvent(input$StamenToner_marker_click, {
     reactiveValues$currNode <- input$StamenToner_marker_click$id
+    #TODO: add lat long here
     updateNodesWhenClicked(reactiveValues$currNode, "StamenToner")
   })
   observeEvent(input$NightSky_marker_click, {
     reactiveValues$currNode <- input$NightSky_marker_click$id
+    #TODO: add lat long here
     updateNodesWhenClicked(reactiveValues$currNode, "NightSky")
   })
+
+  showErrorMessageForNoNodeData <- function() {
+    # TODO: lol this is a terrible way to write this code I'm sure but I couldn't figure it out
+    janky_solution = ""
+    validate(
+      need(
+        janky_solution != "",
+        "No data available for this node. Please select a different node."
+      )
+    )
+  }
+  
+  # ============================================================ UI
   
   output$Normal <- renderLeaflet({
     coordinates <- getNodeGeoPoints()
@@ -231,8 +354,7 @@ AOTmapServer <- function(input, output, session) {
       layerId = coordinates$vsn
     )
   })
-  
-  
+
   output$StamenToner <- renderLeaflet({
     coordinates <- getNodeGeoPoints()
     
@@ -281,92 +403,16 @@ AOTmapServer <- function(input, output, session) {
     data <- node1CurrentDataReactive()
     datatable(data, options = list(pageLength = 5))
   })
+  
   output$nodeTable2 <- renderDataTable({
     data <- node2CurrentDataReactive()
     datatable(data, options = list(pageLength = 5))
-  })
-  
-  node1CurrentDataReactive <- reactive({
-    tryCatch({
-      #print("getting to getnodeData")
-      #print(reactiveValues$data_selected)
-      getNodeData(reactiveValues$firstNode,
-                  reactiveValues$data_selected)
-    },
-    error = function(cond) {
-      # TODO: lol this is a terrible way to write this code I'm sure but I couldn't figure it out
-      janky_solution = ""
-      validate(
-        need(
-          janky_solution != "",
-          "No data available for this node. Please select a different node."
-        )
-      )
-    })
-  })
-  
-  node2CurrentDataReactive <- reactive({
-    tryCatch({
-      #print("second node here")
-      #print(reactiveValues$secondNode)
-      getNodeData(reactiveValues$secondNode,
-                  reactiveValues$data_selected)
-    },
-    error = function(cond) {
-      # TODO: lol this is a terrible way to write this code I'm sure but I couldn't figure it out
-      janky_solution = ""
-      validate(
-        need(
-          janky_solution != "",
-          "No data available for this node. Please select a different node."
-        )
-      )
-    })
-  })
-  
-  node1weekDataReactive <- reactive({
-    tryCatch({
-      #print("getting to getnodeData")
-      #print(reactiveValues$data_selected)
-      getNodeData7Days(reactiveValues$firstNode,
-                       reactiveValues$data_selected)
-    },
-    error = function(cond) {
-      # TODO: lol this is a terrible way to write this code I'm sure but I couldn't figure it out
-      janky_solution = ""
-      validate(
-        need(
-          janky_solution != "",
-          "No data available for this node. Please select a different node."
-        )
-      )
-    })
-  })
-  
-  node2weekDataReactive <- reactive({
-    tryCatch({
-      #print("second node here")
-      #print(reactiveValues$secondNode)
-      getNodeData7Days(reactiveValues$secondNode,
-                       reactiveValues$data_selected)
-    },
-    error = function(cond) {
-      # TODO: lol this is a terrible way to write this code I'm sure but I couldn't figure it out
-      janky_solution = ""
-      validate(
-        need(
-          janky_solution != "",
-          "No data available for this node. Please select a different node."
-        )
-      )
-    })
   })
   
   output$lineGraphCurrent <- renderPlot({
     autoInvalidate()
     reactiveValues$data_selected <- data_selected()
     node1Data <- node1CurrentDataReactive()
-    print(node1Data)
     node2Data <- node2CurrentDataReactive()
     
     node1Colors <- brewer.pal(n = 6, name = 'OrRd')
@@ -519,7 +565,6 @@ AOTmapServer <- function(input, output, session) {
     plot
   })
   
-  
   updateTimeFormatForPlot <- function(time, sensor) {
     time <- time[1]
     newTime <-
@@ -600,7 +645,6 @@ AOTmapServer <- function(input, output, session) {
     df$timestamp <- apply(df, 1, updateTimeFormatForPlot)
     return(df)
   }
-  
   
   output$lineGraph7Days <- renderPlot({
     autoInvalidate()
@@ -789,5 +833,14 @@ AOTmapServer <- function(input, output, session) {
     
   })
   
+  output$darkSkyTableNode1Day <- renderDataTable({
+    data <- darkSkyNodeDataNode1DayReactive()
+    datatable(data, options = list(pageLength = 5))
+  })
+  
+  output$darkSkyTableNode2Day <- renderDataTable({
+    data <- darkSkyNodeDataNode2DayReactive()
+    datatable(data, options = list(pageLength = 5))
+  })
   
 }

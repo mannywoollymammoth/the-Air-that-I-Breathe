@@ -1,6 +1,7 @@
 library('revgeo')
 library(AotClient)
 library('tidyverse')
+library(darksky)
 
 all_node_data <- ls.nodes()
 
@@ -16,6 +17,9 @@ temperature_sensors <- all_sensors[grep("temperature", all_sensors)]
 intensity_sensors <-
   all_sensors[grep("light_intensity", all_sensors)]
 humidity_sensors <- all_sensors[grep("humidity", all_sensors)]
+
+# Set up for Dark Sky API
+# TODO: i'm struggle bussing lol hehe I did this manually
 
 
 #returns list of latitudes and longitudes along with their VSN to identify them
@@ -61,17 +65,17 @@ getAddressOfCurrNode <- function(node) {
 getTimeFromToday <- function(period) {
   currTime = Sys.time()
   
-  if ("day" %in% period) {
-    currTime = as_datetime(currTime) - 1
+  if ("day" == period) {
+    currTime = as_datetime(currTime) - days(1)
   }
-  else if ("week" %in% period) {
-    currTime = as_datetime(currTime) - 7
+  else if ("week" == period) {
+    currTime = as_datetime(currTime) - days(7)
   }
   else{
     currTime = as_datetime(currTime)
   }
   
-  currTime = strftime(currTime, tz = "UTC", format = "lt:%Y-%m-%dT%H:%M:%S")
+  currTime = strftime(currTime, tz = "UTC", format = "%Y-%m-%dT%H:%M:%S")
   return (currTime)
 }
 
@@ -85,6 +89,7 @@ updateTimeFormatForPlot <- function(time) {
 
 getAOTvalue <- function(period, value) {
   time = getTimeFromToday(period)
+  time = strftime(time, tz = "UTC", format = "lt:%Y-%m-%dT%H:%M:%S")
   
   sensor_list = c()
   if (value == "so2") {
@@ -197,7 +202,6 @@ getNodeData <- function(node, values) {
   if ("pm10" %in% values) {
     sensor_list <- pm10_sensors
     pm10 <- ls.observations(filters = list(sensor = sensor_list[1], node = node))
-    print(pm10)
     df$pm10Value = pm10$value
   }
   if ("temperature" %in% values) {
@@ -232,6 +236,7 @@ getNodeTemps <- function() {
   df <-
     setNames(data.frame(matrix(ncol = 4, nrow = 0)), c("vsn", "min", "max", "avg"))
   time = getTimeFromToday("day")
+  time = strftime(time, tz = "UTC", format = "lt:%Y-%m-%dT%H:%M:%S")
   vsns <- all_node_data$vsn
   
   for (num in vsns) {
@@ -254,5 +259,75 @@ getNodeTemps <- function() {
     error = function(cond) {
     })
   }
+  
+}
+
+getNodeDarkSkyData <- function(period, lat, long) {
+  # get data based on the time period requested and the lat/long of the current node
+  time = getTimeFromToday(period)
+  
+  curr = NULL
+  
+  if (period=="week") {
+    
+    currReq <- get_forecast_for(lat, long, time)$hourly
+    
+    curr <- data.frame(
+      time = currReq$time,
+      summary = currReq$summary,
+      temperature = currReq$temperature,
+      humidity = currReq$humidity,
+      windSpeed = currReq$windSpeed,
+      windBearing = currReq$windBearing,
+      cloudCover = currReq$cloudCover,
+      visibility = currReq$visibility,
+      pressure = currReq$pressure
+    )
+    
+    for (i in 1:6) {
+      time = as_datetime(time) + days(1)
+      time = strftime(time, tz = "UTC", format = "%Y-%m-%dT%H:%M:%S")
+      
+      curr2 <- get_forecast_for(lat, long, time)$hourly
+      
+      curr2 <- data.frame(
+        time = curr2$time,
+        summary = curr2$summary,
+        temperature = curr2$temperature,
+        humidity = curr2$humidity,
+        windSpeed = curr2$windSpeed,
+        windBearing = curr2$windBearing,
+        cloudCover = curr2$cloudCover,
+        visibility = curr2$visibility,
+        pressure = curr2$pressure
+      )
+      
+      curr <- rbind(curr, curr2)
+      
+    }
+  } else if (period=="day") {
+    curr <- get_forecast_for(lat, long, time)$hourly
+  } else {
+  }
+  
+  #TODO: on the website it says he wanted the ozone as well.. but that's not an option....?
+  
+  df <- data.frame(
+    time = curr$time,
+    summary = curr$summary,
+    temperature = curr$temperature,
+    humidity = curr$humidity,
+    windSpeed = curr$windSpeed,
+    windBearing = curr$windBearing,
+    cloudCover = curr$cloudCover,
+    visibility = curr$visibility,
+    pressure = curr$pressure
+  )
+  
+  df
+  
+}
+
+getNodeOpenAQData <- function() {
   
 }
