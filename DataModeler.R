@@ -19,8 +19,7 @@ intensity_sensors <-
 humidity_sensors <- all_sensors[grep("humidity", all_sensors)]
 
 # Set up for Dark Sky API
-# TODO: i'm struggle bussing lol hehe I did this manually
-
+Sys.setenv(DARKSKY_API_KEY = scan("dark_sky_api_key.txt", what="character", sep=NULL) )
 
 #returns list of latitudes and longitudes along with their VSN to identify them
 getNodeGeoPoints <- function() {
