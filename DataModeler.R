@@ -65,11 +65,11 @@ getAddressOfCurrNode <- function(node) {
 getTimeFromToday <- function(period) {
   currTime = Sys.time()
   
-  if ("day" %in% period) {
-    currTime = as_datetime(currTime) - 1
+  if ("day" == period) {
+    currTime = as_datetime(currTime) - days(1)
   }
-  else if ("week" %in% period) {
-    currTime = as_datetime(currTime) - 7
+  else if ("week" == period) {
+    currTime = as_datetime(currTime) - days(7)
   }
   else{
     currTime = as_datetime(currTime)
@@ -266,14 +266,53 @@ getNodeTemps <- function() {
 getNodeDarkSkyData <- function(period, lat, long) {
   # get data based on the time period requested and the lat/long of the current node
   time = getTimeFromToday(period)
+  print("TIMEEEEE")
+  print(time)
+  
+  curr = NULL
   
   if (period=="week") {
-    print("hi") 
+    
+    currReq <- get_forecast_for(lat, long, time)$hourly
+    
+    curr <- data.frame(
+      time = currReq$time,
+      summary = currReq$summary,
+      temperature = currReq$temperature,
+      humidity = currReq$humidity,
+      windSpeed = currReq$windSpeed,
+      windBearing = currReq$windBearing,
+      cloudCover = currReq$cloudCover,
+      visibility = currReq$visibility,
+      pressure = currReq$pressure
+    )
+    
+    for (i in 1:6) {
+      time = as_datetime(time) + days(1)
+      time = strftime(time, tz = "UTC", format = "%Y-%m-%dT%H:%M:%S")
+      
+      curr2 <- get_forecast_for(lat, long, time)$hourly
+      print(curr2)
+      
+      curr2 <- data.frame(
+        time = curr2$time,
+        summary = curr2$summary,
+        temperature = curr2$temperature,
+        humidity = curr2$humidity,
+        windSpeed = curr2$windSpeed,
+        windBearing = curr2$windBearing,
+        cloudCover = curr2$cloudCover,
+        visibility = curr2$visibility,
+        pressure = curr2$pressure
+      )
+      
+      curr <- rbind(curr, curr2)
+      
+    }
   } else if (period=="day") {
     curr <- get_forecast_for(lat, long, time)$hourly
-    print("bye")
   } else {
-    print("1")
+    print("I don't know how to just do current lol?")
   }
   
   #TODO: on the website it says he wanted the ozone as well.. but that's not an option....?
@@ -291,5 +330,9 @@ getNodeDarkSkyData <- function(period, lat, long) {
   )
   
   df
+  
+}
+
+getNodeOpenAQData <- function() {
   
 }
