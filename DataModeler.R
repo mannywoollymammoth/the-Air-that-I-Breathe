@@ -1,6 +1,7 @@
 library('revgeo')
 library(AotClient)
 library('tidyverse')
+library(darksky)
 
 all_node_data <- ls.nodes()
 
@@ -16,6 +17,9 @@ temperature_sensors <- all_sensors[grep("temperature", all_sensors)]
 intensity_sensors <-
   all_sensors[grep("light_intensity", all_sensors)]
 humidity_sensors <- all_sensors[grep("humidity", all_sensors)]
+
+# Set up for Dark Sky API
+# TODO: i'm struggle bussing lol hehe I did this manually
 
 
 #returns list of latitudes and longitudes along with their VSN to identify them
@@ -71,7 +75,7 @@ getTimeFromToday <- function(period) {
     currTime = as_datetime(currTime)
   }
   
-  currTime = strftime(currTime, tz = "UTC", format = "lt:%Y-%m-%dT%H:%M:%S")
+  currTime = strftime(currTime, tz = "UTC", format = "%Y-%m-%dT%H:%M:%S")
   return (currTime)
 }
 
@@ -85,6 +89,7 @@ updateTimeFormatForPlot <- function(time) {
 
 getAOTvalue <- function(period, value) {
   time = getTimeFromToday(period)
+  time = strftime(time, tz = "UTC", format = "lt:%Y-%m-%dT%H:%M:%S")
   
   sensor_list = c()
   if (value == "so2") {
@@ -232,6 +237,7 @@ getNodeTemps <- function() {
   df <-
     setNames(data.frame(matrix(ncol = 4, nrow = 0)), c("vsn", "min", "max", "avg"))
   time = getTimeFromToday("day")
+  time = strftime(time, tz = "UTC", format = "lt:%Y-%m-%dT%H:%M:%S")
   vsns <- all_node_data$vsn
   
   for (num in vsns) {
@@ -254,5 +260,36 @@ getNodeTemps <- function() {
     error = function(cond) {
     })
   }
+  
+}
+
+getNodeDarkSkyData <- function(period, lat, long) {
+  # get data based on the time period requested and the lat/long of the current node
+  time = getTimeFromToday(period)
+  
+  if (period=="week") {
+    print("hi") 
+  } else if (period=="day") {
+    curr <- get_forecast_for(lat, long, time)$hourly
+    print("bye")
+  } else {
+    print("1")
+  }
+  
+  #TODO: on the website it says he wanted the ozone as well.. but that's not an option....?
+  
+  df <- data.frame(
+    time = curr$time,
+    summary = curr$summary,
+    temperature = curr$temperature,
+    humidity = curr$humidity,
+    windSpeed = curr$windSpeed,
+    windBearing = curr$windBearing,
+    cloudCover = curr$cloudCover,
+    visibility = curr$visibility,
+    pressure = curr$pressure
+  )
+  
+  df
   
 }

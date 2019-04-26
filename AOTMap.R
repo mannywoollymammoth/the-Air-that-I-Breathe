@@ -80,8 +80,14 @@ AOTMap <- function(id) {
       status = "primary",
       width = 8,
       dataTableOutput(nameSpace("nodeTable2"))
+    ),
+    box(
+      title = "Curr Node Dark Sky Data",
+      solidHeader = TRUE,
+      status = "primary",
+      width = 8,
+      dataTableOutput(nameSpace("darkSkyTable"))
     )
-    
     
   ),
   column(
@@ -105,6 +111,10 @@ AOTmapServer <- function(input, output, session) {
   reactiveValues$currNode <- "077"
   reactiveValues$firstNode <- "077"
   reactiveValues$secondNode <- "004"
+  
+  reactiveValues$currNodeLat <- 41.83107
+  reactiveValues$currNodeLong <- -87.6173
+  
   reactiveValues$markerState <- 1
   data_selected <- reactive(input$data_selected)
   reactiveValues$data_selected <- NULL
@@ -115,6 +125,14 @@ AOTmapServer <- function(input, output, session) {
     autoInvalidate()
   })
   
+  darkSkyNodeDataReactive <- reactive({
+    tryCatch({
+      getNodeDarkSkyData("day", reactiveValues$currNodeLat, reactiveValues$currNodeLong)
+    },
+    error = function(cond) {
+      showErrorMessageForNoNodeData()
+    })
+  })
   
   updateNodesWhenClicked <- function(currNodeId, mapType) {
     coordinates <- getNodeGeoPoints()
@@ -200,16 +218,33 @@ AOTmapServer <- function(input, output, session) {
   
   observeEvent(input$Normal_marker_click, {
     reactiveValues$currNode <- input$Normal_marker_click$id
+    reactiveValues$currNodeLat <- input$Normal_marker_click$lat
+    reactiveValues$currNodeLong <- input$Normal_marker_click$lng
+    
     updateNodesWhenClicked(reactiveValues$currNode, "Normal")
   })
   observeEvent(input$StamenToner_marker_click, {
     reactiveValues$currNode <- input$StamenToner_marker_click$id
+    #TODO: add lat long here
     updateNodesWhenClicked(reactiveValues$currNode, "StamenToner")
   })
   observeEvent(input$NightSky_marker_click, {
     reactiveValues$currNode <- input$NightSky_marker_click$id
+    #TODO: add lat long here
     updateNodesWhenClicked(reactiveValues$currNode, "NightSky")
   })
+
+  
+  showErrorMessageForNoNodeData <- function() {
+    # TODO: lol this is a terrible way to write this code I'm sure but I couldn't figure it out
+    janky_solution = ""
+    validate(
+      need(
+        janky_solution != "",
+        "No data available for this node. Please select a different node."
+      )
+    )
+  }
   
   output$Normal <- renderLeaflet({
     coordinates <- getNodeGeoPoints()
@@ -231,7 +266,7 @@ AOTmapServer <- function(input, output, session) {
       layerId = coordinates$vsn
     )
   })
-  
+
   
   output$StamenToner <- renderLeaflet({
     coordinates <- getNodeGeoPoints()
@@ -294,14 +329,7 @@ AOTmapServer <- function(input, output, session) {
                   reactiveValues$data_selected)
     },
     error = function(cond) {
-      # TODO: lol this is a terrible way to write this code I'm sure but I couldn't figure it out
-      janky_solution = ""
-      validate(
-        need(
-          janky_solution != "",
-          "No data available for this node. Please select a different node."
-        )
-      )
+      showErrorMessageForNoNodeData()
     })
   })
   
@@ -313,14 +341,7 @@ AOTmapServer <- function(input, output, session) {
                   reactiveValues$data_selected)
     },
     error = function(cond) {
-      # TODO: lol this is a terrible way to write this code I'm sure but I couldn't figure it out
-      janky_solution = ""
-      validate(
-        need(
-          janky_solution != "",
-          "No data available for this node. Please select a different node."
-        )
-      )
+      showErrorMessageForNoNodeData()
     })
   })
   
@@ -332,14 +353,7 @@ AOTmapServer <- function(input, output, session) {
                        reactiveValues$data_selected)
     },
     error = function(cond) {
-      # TODO: lol this is a terrible way to write this code I'm sure but I couldn't figure it out
-      janky_solution = ""
-      validate(
-        need(
-          janky_solution != "",
-          "No data available for this node. Please select a different node."
-        )
-      )
+      showErrorMessageForNoNodeData()
     })
   })
   
@@ -351,14 +365,7 @@ AOTmapServer <- function(input, output, session) {
                        reactiveValues$data_selected)
     },
     error = function(cond) {
-      # TODO: lol this is a terrible way to write this code I'm sure but I couldn't figure it out
-      janky_solution = ""
-      validate(
-        need(
-          janky_solution != "",
-          "No data available for this node. Please select a different node."
-        )
-      )
+      showErrorMessageForNoNodeData()
     })
   })
   
@@ -519,7 +526,6 @@ AOTmapServer <- function(input, output, session) {
     plot
   })
   
-  
   updateTimeFormatForPlot <- function(time, sensor) {
     time <- time[1]
     newTime <-
@@ -600,7 +606,6 @@ AOTmapServer <- function(input, output, session) {
     df$timestamp <- apply(df, 1, updateTimeFormatForPlot)
     return(df)
   }
-  
   
   output$lineGraph7Days <- renderPlot({
     autoInvalidate()
@@ -789,5 +794,9 @@ AOTmapServer <- function(input, output, session) {
     
   })
   
+  output$darkSkyTable <- renderDataTable({
+    data <- darkSkyNodeDataReactive()
+    datatable(data, options = list(pageLength = 5))
+  })
   
 }
