@@ -162,31 +162,31 @@ getNodeData <- function(node, values) {
   parsed_sensor_list <- list()
   if ("so2" %in% values) {
     sensor_list <- so2_sensors
-    so2 <- ls.observations(filters = list(sensor = sensor_list[1], node = node))
+    so2 <- ls.observations(filters = list(sensor = 'chemsense.so2.concentration', node = node))
     df$so2Value = so2$value
     
   }
   if ("h2s" %in% values) {
     
     sensor_list <- h2s_sensors
-    h2s <- ls.observations(filters = list(sensor = sensor_list[1], node = node))
+    h2s <- ls.observations(filters = list(sensor = 'chemsense.h2s.concentration', node = node))
     df$h2sValue = h2s$value
   }
   
   if ("o3" %in% values) {
     sensor_list <- o3_sensors
-    o3 <- ls.observations(filters = list(sensor = sensor_list[1], node = node))
+    o3 <- ls.observations(filters = list(sensor = 'chemsense.o3.concentration' , node = node))
     df$o3Value = o3$value
   }
   
   if ("no2" %in% values) {
     sensor_list <- no2_sensors
-    no2 <- ls.observations(filters = list(sensor = sensor_list[1], node = node))
+    no2 <- ls.observations(filters = list(sensor ='chemsense.no2.concentration', node = node))
     df$no2Value = no2$value
   }
   if ("co" %in% values) {
     sensor_list <- co_sensors
-    co <- ls.observations(filters = list(sensor = sensor_list[1], node = node))
+    co <- ls.observations(filters = list(sensor = 'chemsense.co.concentration', node = node))
     df$coValue = co$value
   }
   if ("pm2_5" %in% values) {
@@ -213,10 +213,6 @@ getNodeData <- function(node, values) {
     sensor_list <- humidity_sensors
   }
   
-  #print(obs)
-  
-  
-  
   # add address of current node
   df$address <- apply(df, 1, getAddressOfCurrNode)
   
@@ -226,6 +222,8 @@ getNodeData <- function(node, values) {
   return(df)
   
 }
+
+
 
 getNodeTemps <- function() {
   # returns a df of the min, max, and average value at each node
