@@ -153,7 +153,6 @@ getAOTvalue <- function(period, value) {
 
 getNodeData <- function(node, values) {
   
-  
   obs <- ls.observations(filters = list(sensor = o3_sensors[1], node = node))
   df <-
     data.frame(
@@ -223,9 +222,7 @@ getNodeData <- function(node, values) {
   df$timestamp <- apply(df, 1, updateTimeFormatForPlot)
   
   return(df)
-  
 }
-
 
 
 getNodeTemps <- function() {
@@ -304,9 +301,12 @@ getNodeDarkSkyData <- function(period, lat, long) {
       curr <- rbind(curr, curr2)
       
     }
-  } else if (period=="day") {
+  } 
+  else if (period=="day") {
     curr <- get_forecast_for(lat, long, time)$hourly
   } else {
+    curr <- get_forecast_for(lat, long, time)$currently
+    print(get_forecast_for(lat, long, time))
   }
   
   #TODO: on the website it says he wanted the ozone as well.. but that's not an option....?
