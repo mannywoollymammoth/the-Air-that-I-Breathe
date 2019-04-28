@@ -186,7 +186,27 @@ AOTmapServer <- function(input, output, session) {
   
   # ===================================================== AOT
   
-  node1DayDataReactive <- reactive({
+  node1AOTCurrentDataReactive <- reactive({
+    tryCatch({
+      getNodeAOTData("current", reactiveValues$firstNode,
+                     reactiveValues$data_selected)
+    },
+    error = function(cond) {
+      showErrorMessageForNoNodeData()
+    })
+  })
+  
+  node2AOTCurrentDataReactive <- reactive({
+    tryCatch({
+      getNodeAOTData("current", reactiveValues$firstNode,
+                     reactiveValues$data_selected)
+    },
+    error = function(cond) {
+      showErrorMessageForNoNodeData()
+    })
+  })
+  
+  node1AOTDayDataReactive <- reactive({
     tryCatch({
       getNodeAOTData("day", reactiveValues$firstNode,
                   reactiveValues$data_selected)
@@ -196,7 +216,7 @@ AOTmapServer <- function(input, output, session) {
     })
   })
   
-  node2DayDataReactive <- reactive({
+  node2AOTDayDataReactive <- reactive({
     tryCatch({
       getNodeAOTData("day", reactiveValues$secondNode,
                   reactiveValues$data_selected)
@@ -206,7 +226,7 @@ AOTmapServer <- function(input, output, session) {
     })
   })
   
-  node1weekDataReactive <- reactive({
+  node1AOTWeekDataReactive <- reactive({
     tryCatch({
       getNodeAOTData("week", 
                          reactiveValues$firstNode,
@@ -217,7 +237,7 @@ AOTmapServer <- function(input, output, session) {
     })
   })
   
-  node2weekDataReactive <- reactive({
+  node2AOTWeekDataReactive <- reactive({
     tryCatch({
       getNodeAOTData("week", 
                          reactiveValues$secondNode,
@@ -573,11 +593,11 @@ AOTmapServer <- function(input, output, session) {
     data <- NULL
     
     if (input$timeframe == "current") {
-      
+      data <- node1AOTCurrentDataReactive()
     } else if (input$timeframe == "day") {
-      data <- node1DayDataReactive()
+      data <- node1AOTDayDataReactive()
     } else if (input$timeframe == "week") {
-      data <- node1weekDataReactive()
+      data <- node1AOTWeekDataReactive()
     }
     
     datatable(data, options = list(pageLength = 5))
@@ -588,11 +608,11 @@ AOTmapServer <- function(input, output, session) {
     data <- NULL
     
     if (input$timeframe == "current") {
-      
+      data <- node2AOTCurrentDataReactive()
     } else if (input$timeframe == "day") {
-      data <- node2DayDataReactive()
+      data <- node2AOTDayDataReactive()
     } else if (input$timeframe == "week") {
-      data <- node2weekDataReactive()
+      data <- node2AOTWeekDataReactive()
     }
     
     datatable(data, options = list(pageLength = 5))
@@ -631,8 +651,8 @@ AOTmapServer <- function(input, output, session) {
   output$lineGraphCurrent <- renderPlot({
     autoInvalidate()
     reactiveValues$data_selected <- data_selected()
-    node1Data <- node1DayDataReactive()
-    node2Data <- node2DayDataReactive()
+    node1Data <- node1AOTDayDataReactive()
+    node2Data <- node2AOTDayDataReactive()
     
     node1Colors <- brewer.pal(n = 6, name = 'OrRd')
     node2Colors <- brewer.pal(n = 6, name = 'BuPu')
