@@ -373,7 +373,7 @@ getNodeTemps <- function() {
     error = function(cond) {
     })
   }
-  
+  return(df)
 }
 
 getNodeDarkSkyData <- function(period, lat, long, values) {

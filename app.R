@@ -16,6 +16,9 @@ library(shinyjs)
 source('AOTMap.R')
 source('AOTTable.R')
 
+source('heatMap.R')
+# Define UI for application that draws a histogram
+
 ui <- dashboardPage(
   dashboardHeader(),
   dashboardSidebar(sidebarMenu(
@@ -39,7 +42,7 @@ ui <- dashboardPage(
     tabItem(tabName = "AOTTable",
             AOTTable(id = "AOTTable")),
     tabItem(tabName = "heatMap",
-            h2("Widgets tab content"))
+            heatMap(id="heatMap"))
   )),
   
   body <- dashboardBody(useShinyjs(),
@@ -49,6 +52,7 @@ ui <- dashboardPage(
 server <- function(input, output) {
   callModule(AOTmapServer, id = "AOTMap")
   callModule(AOTTableServer, id = "AOTTable")
+  callModule(heatMapServer, id = "heatMap")
 }
 
 # Run the application
