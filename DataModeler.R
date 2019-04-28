@@ -96,7 +96,7 @@ updateTimeFormatForPlot <- function(time) {
   time <- time[1]
   newTime <-
     strptime(toString(time), tz = "UTC", format = "%Y-%m-%dT%H:%M:%S")
-  newTime <- strftime(newTime, tz = "UTC", format = "%Y-%m-%d %H:%M:%S")
+  newTime <-strftime(newTime, tz = "UTC", format = "%Y-%m-%d %H:%M:%S")
   return (newTime)
 }
 
@@ -191,9 +191,9 @@ getNodeAOTData <- function(period, node, values) {
   request_size = 200
   
   if(period == "week") {
-    request_size = 10000
+    request_size = 10000  # this is cut down to ~200 later
   }
-  
+
   obs <- ls.observations(filters = list(sensor = o3_sensors[1], size = request_size, node = node, timestamp = time))
   
   df <-
@@ -211,91 +211,117 @@ getNodeAOTData <- function(period, node, values) {
         node_vsn = listShortenerByManny(obs$node_vsn)
       )
   }
-  
-  parsed_sensor_list <- list()
+
   if ("so2" %in% values) {
-    so2 <- ls.observations(filters = list(sensor = so2_sensor, size = request_size, node = node, timestamp = time))$value
-    if(period=="week") {
-      so2 <- listShortenerByManny(so2)
-    }
-    df$so2Value = so2
+    df$so2 <- "N/A"
+    try({
+      so2 <- ls.observations(filters = list(sensor = so2_sensor, size = request_size, node = node, timestamp = time))$value
+      if(period=="week") {
+        so2 <- listShortenerByManny(so2)
+      }
+      df$so2 = so2
+    })
   }
   if ("h2s" %in% values) {
-    h2s <- ls.observations(filters = list(sensor = h2s_sensor, size = request_size, node = node, timestamp = time))$value
-    if(period=="week") {
-      h2s <- listShortenerByManny(h2s)
-    }
-    df$h2sValue = h2s
+    df$h2s <- "N/A"
+    try({
+      h2s <- ls.observations(filters = list(sensor = h2s_sensor, size = request_size, node = node, timestamp = time))$value
+      if(period=="week") {
+        h2s <- listShortenerByManny(h2s)
+      }
+      df$h2s = h2s
+    })
   }
   if ("o3" %in% values) {
-    o3 <- ls.observations(filters = list(sensor = o3_sensor, size = request_size, node = node, timestamp = time))$value
-    if(period=="week") {
-      o3 <- listShortenerByManny(o3)
-    }
-    df$o3Value = o3
+    df$o3 <- "N/A"
+    try({
+      o3 <- ls.observations(filters = list(sensor = o3_sensor, size = request_size, node = node, timestamp = time))$value
+      if(period=="week") {
+        o3 <- listShortenerByManny(o3)
+      }
+      df$o3 = o3
+    })
   }
   if ("no2" %in% values) {
-    no2 <- ls.observations(filters = list(sensor = no2_sensor, size = request_size, node = node, timestamp = time))$value
-    if(period=="week") {
-      no2 <- listShortenerByManny(no2)
-    }
-    df$no2Value = no2
+    df$no2 <- "N/A"
+    try({
+      no2 <- ls.observations(filters = list(sensor = no2_sensor, size = request_size, node = node, timestamp = time))$value
+      if(period=="week") {
+        no2 <- listShortenerByManny(no2)
+      }
+      df$no2 = no2
+    })
   }
   if ("co" %in% values) {
-    co <- ls.observations(filters = list(sensor = co_sensor, size = request_size, node = node, timestamp = time))$value
-    if(period=="week") {
-      co <- listShortenerByManny(co)
-    }
-    df$coValue = co
+    df$co <- "N/A"
+    try({
+      co <- ls.observations(filters = list(sensor = co_sensor, size = request_size, node = node, timestamp = time))$value
+      if(period=="week") {
+        co <- listShortenerByManny(co)
+      }
+      df$co = co
+    })
   }
   if ("pm2_5" %in% values) {
-    pm2_5 <- ls.observations(filters = list(sensor = pm2_5_sensor, size = request_size, node = node, timestamp = time))$value
-    if(period=="week") {
-      pm2_5 <- listShortenerByManny(pm2_5)
-    }
-    df$pm2_5Value = pm2_5
+    df$pm2_5 <- "N/A"
+    try({
+      pm2_5 <- ls.observations(filters = list(sensor = pm2_5_sensor, size = request_size, node = node, timestamp = time))$value
+      if(period=="week") {
+        pm2_5 <- listShortenerByManny(pm2_5)
+      }
+      df$pm2_5 = pm2_5
+    })
   }
   if ("pm10" %in% values) {
-    pm10 <- ls.observations(filters = list(sensor = pm10_sensor, size = request_size, node = node, timestamp = time))$value
-    if(period=="week") {
-      pm10 <- listShortenerByManny(pm10)
-    }
-    df$pm10Value = pm10
+    df$pm10 <- "N/A"
+    try({
+      pm10 <- ls.observations(filters = list(sensor = pm10_sensor, size = request_size, node = node, timestamp = time))$value
+      if(period=="week") {
+        pm10 <- listShortenerByManny(pm10)
+      }
+      df$pm10 = pm10
+    })
   }
   if ("temperature" %in% values) {
-    temper <- ls.observations(filters = list(sensor = temperature_sensor, size = request_size, node = node, timestamp = time))$value
-    if(period=="week") {
-      temper <- listShortenerByManny(temper)
-    }
-    df$tempValue = temper
+    df$temperature <- "N/A"
+    try({
+      temper <- ls.observations(filters = list(sensor = temperature_sensor, size = request_size, node = node, timestamp = time))$value
+      if(period=="week") {
+        temper <- listShortenerByManny(temper)
+      }
+      df$temperature = temper
+    })
   }
   if ("intensity" %in% values) {
-    intensity <- ls.observations(filters = list(sensor = intensity_sensor, size = request_size, node = node, timestamp = time))$value
-    if(period=="week") {
-      intensity <- listShortenerByManny(intensity)
-    }
-    df$intensityValue = intensity
+    df$intensity <- "N/A"
+    try({
+      intensity <- ls.observations(filters = list(sensor = intensity_sensor, size = request_size, node = node, timestamp = time))$value
+      if(period=="week") {
+        intensity <- listShortenerByManny(intensity)
+      }
+      df$intensity = intensity
+    })
   }
   if ("humidity" %in% values) {
-    humid <- ls.observations(filters = list(sensor = humidity_sensor, size = request_size, node = node, timestamp = time))$value
-    if(period=="week") {
-      humid <- listShortenerByManny(humid)
-    }
-    df$humidityValue = humid
+    df$humidity <- "N/A"
+    try({
+      humid <- ls.observations(filters = list(sensor = humidity_sensor, size = request_size, node = node, timestamp = time))$value
+      if(period=="week") {
+        humid <- listShortenerByManny(humid)
+      }
+      df$humidity = humid
+    })
   }
   
   # change format of time column
   df$timestamp <- apply(df, 1, updateTimeFormatForPlot)
-
+  
   return(df)
 }
 
 listShortenerByManny <- function(orig) {
   new =  orig[c(
     TRUE,
-    FALSE,
-    FALSE,
-    FALSE,
     FALSE,
     FALSE,
     FALSE,
@@ -350,7 +376,7 @@ getNodeTemps <- function() {
   
 }
 
-getNodeDarkSkyData <- function(period, lat, long) {
+getNodeDarkSkyData <- function(period, lat, long, values) {
   # get data based on the time period requested and the lat/long of the current node
   time = getTimeFromToday(period)
   
@@ -396,9 +422,9 @@ getNodeDarkSkyData <- function(period, lat, long) {
   } 
   else if (period=="day") {
     curr <- get_forecast_for(lat, long, time)$hourly
-  } else {
+  } 
+  else {
     curr <- get_forecast_for(lat, long, time)$currently
-    print(get_forecast_for(lat, long, time))
   }
   
   #TODO: on the website it says he wanted the ozone as well.. but that's not an option....?
@@ -414,6 +440,35 @@ getNodeDarkSkyData <- function(period, lat, long) {
     visibility = curr$visibility,
     pressure = curr$pressure
   )
+  
+  # drop all columns that are not included in values
+  drops <- numeric()
+  
+  if(!"temperature" %in% values){
+    drops <- append(drops, "temperature")
+  }
+  if(!"humidity" %in% values){
+    drops <- append(drops, "humidity")
+  }
+  if(!"wind speed" %in% values){
+    drops <- append(drops, "windSpeed")
+  }
+  if(!"wind bearing" %in% values){
+    drops <- append(drops, "windBearing")
+  }
+  if(!"cloud cover" %in% values){
+    drops <- append(drops, "cloudCover")
+  }
+  if(!"visibility" %in% values){
+    drops <- append(drops, "visibility")
+  }
+  if(!"pressure" %in% values){
+    drops <- append(drops, "pressure")
+  }
+  
+  if(length(drops) != 0) {
+    df <- df[, !(names(df) %in% drops)]
+  }
   
   df
 }
