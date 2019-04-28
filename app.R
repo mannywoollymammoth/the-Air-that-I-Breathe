@@ -12,7 +12,6 @@ library(leaflet)
 library(scales)
 library(shinyjs)
 
-
 source('AOTMap.R')
 source('AOTTable.R')
 
@@ -35,7 +34,6 @@ ui <- dashboardPage(
     )
     
   )),
-  
   
   dynamicBody <- dashboardBody(tabItems(
     tabItem(tabName = "heatMap",

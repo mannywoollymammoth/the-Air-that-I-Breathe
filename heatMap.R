@@ -22,51 +22,68 @@ source('DataModeler.R')
 
 heatMap <- function(id) {
   nameSpace <- NS(id)
-  fluidRow(column(8,
-                  box(
-                    width = 12, leafletOutput(nameSpace("heatMap"), height = 700)
-                  )),
-          
-             box(
-               title = "Leaflet Time Parameters",
-               solidHeader = TRUE,
-               status = "primary",
-               width = 12,
-               radioButtons(
-                 nameSpace("timeframe"),
-                 inline = TRUE,
-                 "Data to show:",
-                 c("current",
-                   "day",
-                   "week"),
-                 selected = c("current")
-               )
-             ),
-             box(
-               title = "Leaflet Pollutant Parameters",
-               solidHeader = TRUE,
-               status = "primary",
-               width = 12,
-               radioButtons(
-                 nameSpace("Environment"),
-                 inline = TRUE,
-                 "Data to show:",
-                 c(
-                   "so2",
-                   "h2s",
-                   "o3",
-                   "no2",
-                   "co",
-                   "pm2_5",
-                   "pm10",
-                   "temperature",
-                   "intensity",
-                   "humidity"
-                 ),
-                 selected = c("temperature")
-               )
-             )
-           )
+  fluidRow(
+    column(8,
+           box(
+             width = 12, leafletOutput(nameSpace("heatMap"), height = 700)
+           )),
+    
+    
+    box(
+      title = "Dark Sky or AOT",
+      solidHeader = TRUE,
+      status = "primary",
+      width = 12,
+      radioButtons(
+        nameSpace("DarkOrAOT"),
+        inline = TRUE,
+        "Data to show:",
+        c("DarkSky",
+          "AOT"),
+        selected = c("DarkSky")
+      )
+    ),
+    
+    box(
+      title = "Leaflet Time Parameters",
+      solidHeader = TRUE,
+      status = "primary",
+      width = 12,
+      radioButtons(
+        nameSpace("timeframe"),
+        inline = TRUE,
+        "Data to show:",
+        c("current",
+          "day",
+          "week"),
+        selected = c("current")
+      )
+    ),
+    box(
+      title = "Leaflet Pollutant Parameters",
+      solidHeader = TRUE,
+      status = "primary",
+      width = 12,
+      radioButtons(
+        nameSpace("Environment"),
+        inline = TRUE,
+        "Data to show:",
+        c(
+          "so2",
+          "h2s",
+          "o3",
+          "no2",
+          "co",
+          "pm2_5",
+          "pm10",
+          "temperature",
+          "intensity",
+          "humidity"
+        ),
+        selected = c("temperature")
+      )
+    )
+  )
   
   # Define server logic required to draw a histogram
 }
@@ -75,21 +92,27 @@ heatMap <- function(id) {
 heatMapServer <- function(input, output, session) {
   reactiveValues <- reactiveValues()
   env_selected <- reactive(input$Environment)
+  dataSet_selected <- reactive(input$DarkOrAOT)
   reactiveValues$env_selected <- NULL
   
   
   
   #this function will go through the list of node locations and query dark sky
   #it should return a dataframe complete with the data that we need
-  getDarkSkyData <- function(period, nodeLocations){
+  getDarkSkyData <- function(period, nodeLocations) {
     avg <- list()
     vsn <- list()
-    for(row in 1:30){
-      
-      df <- getNodeDarkSkyData('day',nodeLocations$latitude[row], nodeLocations$longitude[row], 'temperature')
+    for (row in 1:30) {
+      df <-
+        getNodeDarkSkyData('day',
+                           nodeLocations$latitude[row],
+                           nodeLocations$longitude[row],
+                           'temperature')
       groupByList <- rep('tag', nrow(df))
       df$groupByList <- groupByList
-      average = aggregate(df$temperature,by=list(df$groupByList),  FUN = mean)
+      average = aggregate(df$temperature,
+                          by = list(df$groupByList),
+                          FUN = mean)
       avg <- append(avg, average$x)
       vsn <-  append(vsn, nodeLocations$vsn[row])
     }
@@ -99,17 +122,27 @@ heatMapServer <- function(input, output, session) {
     print(avg)
     print(vsn)
     #df2 <- getNodeDarkSkyData('week', -87.71054, 41.86635)
-    return(data.frame(vsn,avg))
+    return(data.frame(vsn, avg))
   }
   
   
   output$heatMap <- renderLeaflet({
     nodeLocations <- read_csv('nodeLocations.csv')
-    Data <- getDarkSkyData('test', nodeLocations)
     
-    #Data <- getNodeTemps()
-    #print(Data)
+    
     reactiveValues$env_selected <- env_selected()
+    
+    if ('DarkSky' == dataSet_selected()){
+      Data <- getDarkSkyData('test', nodeLocations)
+    }
+    else{
+      Data <- getNodeTemps()
+      Data <-
+           transform(Data,
+                     min = as.numeric(min),
+                     max = as.numeric(max),
+                     avg = as.numeric(avg))
+    }
     
     Data <-
       merge(
@@ -118,26 +151,22 @@ heatMapServer <- function(input, output, session) {
         by = "vsn",
         all.x = TRUE
       )
-  
+    
     #print(Data)
     if ("so2" == env_selected()) {
-     
+      
     }
-    if("temperature" == env_selected()){
+    if ("temperature" == env_selected()) {
       
     }
     
-
+    
     
     Data <- na.omit(Data)
     #print(Data)
     
     #for the node temp we need this
-    # Data <-
-    #    transform(Data,
-    #              min = as.numeric(min),
-    #              max = as.numeric(max),
-    #              avg = as.numeric(avg))
+    # 
     coordinates(Data) = ~ longitude + latitude
     proj4string(Data) <-
       CRS("+proj=longlat +ellps=WGS84 +datum=WGS84")
