@@ -61,8 +61,10 @@ getNodeGeoPoints <- function() {
     }
     counter <- counter + 1
   }
-  
-  return (data.frame(longitude, latitude, vsn))
+  #write the node locations to a file
+  nodeLocations <- data.frame(longitude, latitude, vsn)
+  write.csv(nodeLocations, file = "nodeLocations.csv")
+  return (nodeLocations)
 }
 
 getAddressOfCurrNode <- function(node) {

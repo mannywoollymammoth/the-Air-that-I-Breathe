@@ -22,6 +22,9 @@ source('heatMap.R')
 ui <- dashboardPage(
   dashboardHeader(),
   dashboardSidebar(sidebarMenu(
+    menuItem("Heat Map",
+             icon = icon("th"),
+             tabName = "heatMap"),
     menuItem(
       "AOT",
       tabName = "AOT",
@@ -29,20 +32,19 @@ ui <- dashboardPage(
       menuSubItem("AOTMap", tabName = "AOTMap"),
       menuSubItem("AOTTable", tabName = "AOTTable")
       
-    ),
-    menuItem("Heat Map",
-             icon = icon("th"),
-             tabName = "heatMap")
+    )
+    
   )),
   
   
   dynamicBody <- dashboardBody(tabItems(
+    tabItem(tabName = "heatMap",
+            heatMap(id="heatMap")),
     tabItem(tabName = "AOTMap",
             AOTMap(id = "AOTMap")),
     tabItem(tabName = "AOTTable",
-            AOTTable(id = "AOTTable")),
-    tabItem(tabName = "heatMap",
-            heatMap(id="heatMap"))
+            AOTTable(id = "AOTTable"))
+    
   )),
   
   body <- dashboardBody(useShinyjs(),
@@ -50,9 +52,10 @@ ui <- dashboardPage(
 )
 # Define server logic required to draw a histogram
 server <- function(input, output) {
+  callModule(heatMapServer, id = "heatMap")
   callModule(AOTmapServer, id = "AOTMap")
   callModule(AOTTableServer, id = "AOTTable")
-  callModule(heatMapServer, id = "heatMap")
+  
 }
 
 # Run the application

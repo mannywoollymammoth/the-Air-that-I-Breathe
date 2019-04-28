@@ -50,7 +50,7 @@ heatMap <- function(id) {
                status = "primary",
                width = 12,
                radioButtons(
-                 nameSpace("pollutant"),
+                 nameSpace("Environment"),
                  inline = TRUE,
                  "Data to show:",
                  c(
@@ -65,7 +65,7 @@ heatMap <- function(id) {
                    "intensity",
                    "humidity"
                  ),
-                 selected = c("current")
+                 selected = c("temperature")
                )
              )
            ))
@@ -75,12 +75,48 @@ heatMap <- function(id) {
 
 
 heatMapServer <- function(input, output, session) {
+  reactiveValues <- reactiveValues()
+  env_selected <- reactive(input$Environment)
+  reactiveValues$env_selected <- NULL
+  
+  
+  
+  #this function will go through the list of node locations and query dark sky
+  #it should return a dataframe complete with the data that we need
+  getDarkSkyData <- function(period, nodeLocations){
+    avg <- list()
+    vsn <- list()
+    for(row in 1:nrow(nodeLocations)){
+      
+      df <- getNodeDarkSkyData('day',nodeLocations$latitude[row], nodeLocations$longitude[row])
+      groupByList <- rep('tag', nrow(df))
+      df$groupByList <- groupByList
+      average = aggregate(df$temperature,by=list(df$groupByList),  FUN = mean)
+      avg <- append(avg, average$x)
+      vsn <-  append(vsn, nodeLocations$vsn[row])
+    }
+    avg <- do.call(rbind, avg)
+    vsn <- do.call(rbind, vsn)
+    
+    print(avg)
+    print(vsn)
+    #df2 <- getNodeDarkSkyData('week', -87.71054, 41.86635)
+    return(data.frame(vsn,avg))
+  }
   
   
   output$heatMap <- renderLeaflet({
-    Data <- getNodeTemps()
+    nodeLocations <- read_csv('nodeLocations.csv')
+    Data <- getDarkSkyData('test', nodeLocations)
     
-    nodeLocations <- getNodeGeoPoints()
+    #Data <- getNodeTemps()
+    #print(Data)
+    reactiveValues$env_selected <- env_selected()
+    
+    #nodeLocations <- getNodeGeoPoints()
+    #read in as tibble and still worked woot
+    
+   
     Data <-
       merge(
         x = Data,
@@ -88,15 +124,26 @@ heatMapServer <- function(input, output, session) {
         by = "vsn",
         all.x = TRUE
       )
+  
+    #print(Data)
+    if ("so2" == env_selected()) {
+     
+    }
+    if("temperature" == env_selected()){
+      
+    }
+    
 
     
     Data <- na.omit(Data)
     #print(Data)
-    Data <-
-      transform(Data,
-                min = as.numeric(min),
-                max = as.numeric(max),
-                avg = as.numeric(avg))
+    
+    #for the node temp we need this
+    # Data <-
+    #    transform(Data,
+    #              min = as.numeric(min),
+    #              max = as.numeric(max),
+    #              avg = as.numeric(avg))
     coordinates(Data) = ~ longitude + latitude
     proj4string(Data) <-
       CRS("+proj=longlat +ellps=WGS84 +datum=WGS84")
@@ -125,7 +172,7 @@ heatMapServer <- function(input, output, session) {
                              lat = 41.870,
                              zoom = 11) %>%
       addPolygons(
-        fillColor = ~ pal(min),
+        fillColor = ~ pal(avg),
         fillOpacity = 0.8,
         color = "#BDBDC3",
         weight = 1
@@ -133,7 +180,7 @@ heatMapServer <- function(input, output, session) {
       addLegend(
         "bottomright",
         pal = pal,
-        values = ~ min,
+        values = ~ avg,
         opacity = 1
       )
     
