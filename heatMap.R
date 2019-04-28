@@ -56,7 +56,7 @@ heatMap <- function(id) {
         c("current",
           "day",
           "week"),
-        selected = c("current")
+        selected = c("day")
       )
     ),
     box(
@@ -76,9 +76,14 @@ heatMap <- function(id) {
           "co",
           "pm2_5",
           "pm10",
-          "temperature",
           "intensity",
-          "humidity"
+          "temperature",
+          "humidity",
+          "wind speed",
+          "wind bearing",
+          "cloud cover",
+          "visibility",
+          "pressure"
         ),
         selected = c("temperature")
       )
@@ -93,6 +98,7 @@ heatMapServer <- function(input, output, session) {
   reactiveValues <- reactiveValues()
   env_selected <- reactive(input$Environment)
   dataSet_selected <- reactive(input$DarkOrAOT)
+  time_selected <- reactive(input$timeframe)
   reactiveValues$env_selected <- NULL
   
   
@@ -104,36 +110,47 @@ heatMapServer <- function(input, output, session) {
     vsn <- list()
     for (row in 1:30) {
       df <-
-        getNodeDarkSkyData('day',
+        getNodeDarkSkyData(period,
                            nodeLocations$latitude[row],
                            nodeLocations$longitude[row],
-                           'temperature')
+                           env_selected())
       groupByList <- rep('tag', nrow(df))
       df$groupByList <- groupByList
-      average = aggregate(df$temperature,
-                          by = list(df$groupByList),
-                          FUN = mean)
+      
+      
+      
+      #here we will only aggregate what ever is selected int the radio box
+      
+      if ('temperature' == env_selected()){
+        average = aggregate(df$temperature,
+                            by = list(df$groupByList),
+                            FUN = mean)
+      }
+      else if('cloud cover' == env_selected()){
+        average = aggregate(df$cloudCover,
+                            by = list(df$groupByList),
+                            FUN = mean)
+      }
+      
+      
+      
       avg <- append(avg, average$x)
       vsn <-  append(vsn, nodeLocations$vsn[row])
     }
     avg <- do.call(rbind, avg)
     vsn <- do.call(rbind, vsn)
     
-    print(avg)
-    print(vsn)
-    #df2 <- getNodeDarkSkyData('week', -87.71054, 41.86635)
     return(data.frame(vsn, avg))
   }
   
   
   output$heatMap <- renderLeaflet({
     nodeLocations <- read_csv('nodeLocations.csv')
-    
-    
     reactiveValues$env_selected <- env_selected()
     
+    
     if ('DarkSky' == dataSet_selected()){
-      Data <- getDarkSkyData('test', nodeLocations)
+      Data <- getDarkSkyData(time_selected(), nodeLocations)
     }
     else{
       Data <- getNodeTemps()
@@ -151,14 +168,6 @@ heatMapServer <- function(input, output, session) {
         by = "vsn",
         all.x = TRUE
       )
-    
-    #print(Data)
-    if ("so2" == env_selected()) {
-      
-    }
-    if ("temperature" == env_selected()) {
-      
-    }
     
     
     
