@@ -57,7 +57,7 @@ AOTMap <- function(id) {
     ) # map column ends
     ),
     
-    fluidRow( # This is the fluid row for the 2 node tables
+    fluidRow( # This is the fluid row for the 2 node tables + options
       column(1, # options
              fluidRow(
                box(
@@ -102,6 +102,15 @@ AOTMap <- function(id) {
                  )
                )
              )
+             ), 
+      column(1,
+               box(
+                 title = "Timeframe for Data Tables",
+                 solidHeader = TRUE,
+                 status = "primary",
+                 width = 12,
+                 dataTableOutput(nameSpace("AOTAllNodesTable"), width = "100%")
+               )
              ), # end of options
       column(5, # Column for Node 1 data
         tabBox(
@@ -587,6 +596,11 @@ AOTmapServer <- function(input, output, session) {
   })
   
   # ============================================================ UI - Tables
+  
+  output$AOTAllNodesTable <- renderDataTable({
+    data <- getAllNodeData()
+    datatable(data, options = list(pageLength = 5))
+  })
   
   output$AOTTableNode1 <- renderDataTable({
     autoInvalidate()
