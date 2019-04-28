@@ -41,12 +41,30 @@ AOTMap <- function(id) {
     column( # map column starts
       5,
       tabBox(
-        title = "Leaflet Map",
-        width = 12,
-        tabPanel("Tab1", leafletOutput(nameSpace("Normal"), height = 500)),
-        tabPanel("Tab2", leafletOutput(nameSpace("StamenToner"), height = 500)),
-        tabPanel("Tab3", leafletOutput(nameSpace("NightSky"), height = 500))
+        width= 12,
+        title = "Node 1 Data",
+        id = "tabset2",
+        height = 550,
+        tabPanel(
+          "AOT Data",
+          box(
+            solidHeader = TRUE,
+            status = "primary",
+            width = 12,
+            dataTableOutput(nameSpace("AOTTableNode1"), width = "100%")
+          )
+        ),
+        tabPanel(
+          "Dark Sky Data",
+          box(
+            solidHeader = TRUE,
+            status = "primary",
+            width = 12,
+            dataTableOutput(nameSpace("darkSkyTableNode1"), width = "100%")
+          )
+        )
       )
+      
     ) # map column ends
     ),
     
@@ -129,30 +147,14 @@ AOTMap <- function(id) {
                )
              ), # end of options
       column(5, # Column for Node 1 data
-        tabBox(
-          width= 12,
-          title = "Node 1 Data",
-          id = "tabset2",
-          height = 550,
-          tabPanel(
-            "AOT Data",
-            box(
-              solidHeader = TRUE,
-              status = "primary",
-              width = 12,
-              dataTableOutput(nameSpace("AOTTableNode1"), width = "100%")
-            )
-          ),
-          tabPanel(
-            "Dark Sky Data",
-            box(
-              solidHeader = TRUE,
-              status = "primary",
-              width = 12,
-              dataTableOutput(nameSpace("darkSkyTableNode1"), width = "100%")
-            )
-          )
-        )
+             tabBox(
+               title = "Leaflet Map",
+               width = 12,
+               tabPanel("Tab1", leafletOutput(nameSpace("Normal"), height = 500)),
+               tabPanel("Tab2", leafletOutput(nameSpace("StamenToner"), height = 500)),
+               tabPanel("Tab3", leafletOutput(nameSpace("NightSky"), height = 500))
+             )
+       
   ), # end of column for node 1 data
   column(5, # Column for Node 2 data
     tabBox(

@@ -26,9 +26,7 @@ heatMap <- function(id) {
                   box(
                     width = 12, leafletOutput(nameSpace("heatMap"), height = 700)
                   )),
-           
-           column(
-             4,
+          
              box(
                title = "Leaflet Time Parameters",
                solidHeader = TRUE,
@@ -68,7 +66,7 @@ heatMap <- function(id) {
                  selected = c("temperature")
                )
              )
-           ))
+           )
   
   # Define server logic required to draw a histogram
 }
@@ -113,10 +111,6 @@ heatMapServer <- function(input, output, session) {
     #print(Data)
     reactiveValues$env_selected <- env_selected()
     
-    #nodeLocations <- getNodeGeoPoints()
-    #read in as tibble and still worked woot
-    
-   
     Data <-
       merge(
         x = Data,
