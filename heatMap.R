@@ -86,9 +86,9 @@ heatMapServer <- function(input, output, session) {
   getDarkSkyData <- function(period, nodeLocations){
     avg <- list()
     vsn <- list()
-    for(row in 1:nrow(nodeLocations)){
+    for(row in 1:30){
       
-      df <- getNodeDarkSkyData('day',nodeLocations$latitude[row], nodeLocations$longitude[row])
+      df <- getNodeDarkSkyData('day',nodeLocations$latitude[row], nodeLocations$longitude[row], 'temperature')
       groupByList <- rep('tag', nrow(df))
       df$groupByList <- groupByList
       average = aggregate(df$temperature,by=list(df$groupByList),  FUN = mean)

@@ -158,6 +158,7 @@ AOTMap <- function(id) {
     tabBox(
       title = "Node 2 Data",
       id = "tabset3",
+      width = 12,
       height = 550,
       tabPanel(
         "AOT Data",
