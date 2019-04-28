@@ -18,30 +18,12 @@ AOTMap <- function(id) {
     
     fluidRow(column( #graph column starts
       7,
-      tabBox(
-        title = "Graphs for different variables and times",
-        # The id lets us use input$tabset1 on the server to find the current tab
-        id = "tabset1",
+      box(
+        title = "AOT Data Graphs",
+        solidHeader = TRUE,
+        status = "primary",
         width = 12,
-        height = 550,
-        tabPanel(
-          "Current",
-          box(
-            solidHeader = TRUE,
-            status = "primary",
-            width = 12,
-            plotOutput(nameSpace("lineGraphCurrent"))
-          )
-        ),
-        tabPanel(
-          "7 Days",
-          box(
-            solidHeader = TRUE,
-            status = "primary",
-            width = 12,
-            plotOutput(nameSpace("lineGraph7Days"))
-          )
-        )
+        plotOutput(nameSpace("lineGraphCurrent"))
       )
     ), # graph column ends
     
@@ -445,89 +427,6 @@ AOTmapServer <- function(input, output, session) {
     )
   }
   
-  # ============================================================ functions that do things
-  
-  updateTimeFormatForPlot <- function(time, sensor) {
-    time <- time[1]
-    newTime <-
-      strptime(toString(time), tz = "UTC", format = "%Y-%m-%dT%H:%M:%S")
-    newTime <-
-      strftime(newTime, tz = "UTC", format = "%Y-%m-%d %H:%M:%S")
-    return (newTime)
-  }
-  
-  getAOTNodeData7Day <- function(node, sensor) {
-    currDay <- Sys.Date()
-    time <- Sys.time()
-    currTime <- strftime(now, format = "%H:%M:%S")
-    weekTimeStamp <- paste("lt:", currDay, "T", currTime, sep = "")
-    
-    Data <-
-      ls.observations(filters = list(
-        size = 10000,
-        sensor = sensor,
-        node = node,
-        timestamp = weekTimeStamp
-      ))
-    df <- data.frame(
-      timestamp = Data$timestamp,
-      uom = Data$uom,
-      node_vsn = Data$node_vsn,
-      value <- Data$value
-    )
-    
-    Data <-
-      df$value[c(
-        TRUE,
-        FALSE,
-        FALSE,
-        FALSE,
-        FALSE,
-        FALSE,
-        FALSE,
-        FALSE,
-        FALSE,
-        FALSE,
-        FALSE,
-        FALSE,
-        FALSE,
-        FALSE,
-        FALSE,
-        FALSE,
-        FALSE,
-        FALSE,
-        FALSE,
-        FALSE
-      )]
-    TimeStamp <-
-      df$timestamp[c(
-        TRUE,
-        FALSE,
-        FALSE,
-        FALSE,
-        FALSE,
-        FALSE,
-        FALSE,
-        FALSE,
-        FALSE,
-        FALSE,
-        FALSE,
-        FALSE,
-        FALSE,
-        FALSE,
-        FALSE,
-        FALSE,
-        FALSE,
-        FALSE,
-        FALSE,
-        FALSE
-      )]
-    
-    df <- data.frame(timestamp <- TimeStamp, value <- Data)
-    df$timestamp <- apply(df, 1, updateTimeFormatForPlot)
-    return(df)
-  }
-  
   # ============================================================ UI - Maps
   
   output$Normal <- renderLeaflet({
@@ -665,8 +564,18 @@ AOTmapServer <- function(input, output, session) {
   output$lineGraphCurrent <- renderPlot({
     autoInvalidate()
     reactiveValues$data_selected <- data_selected()
-    node1Data <- node1AOTDayDataReactive()
-    node2Data <- node2AOTDayDataReactive()
+    
+    # choose node data based on the selected value for the time period
+    if (input$timeframe == "current") {
+      node1Data <- node1AOTCurrentDataReactive()
+      node2Data <- node2AOTCurrentDataReactive()
+    } else if (input$timeframe == "day") {
+      node1Data <- node1AOTDayDataReactive()
+      node2Data <- node2AOTDayDataReactive()
+    } else if (input$timeframe == "week") {
+      node1Data <- node1AOTWeekDataReactive()
+      node2Data <- node2AOTWeekDataReactive()
+    }
     
     node1Colors <- brewer.pal(n = 6, name = 'OrRd')
     node2Colors <- brewer.pal(n = 6, name = 'BuPu')
@@ -797,190 +706,6 @@ AOTmapServer <- function(input, output, session) {
       plot <-
         plot + geom_line(
           data = node2Data,
-          aes(
-            y = node2Data$pm2_5Value,
-            x = node1Data$timestamp,
-            group = 1
-          ),
-          color = node2Colors[6]
-        )
-    }
-    if ("pm10" %in% data_selected()) {
-      plot <-
-        plot + geom_line(data = node1Data,
-                         aes(
-                           y = node1Data$pm10Value,
-                           x = node1Data$timestamp,
-                           group = 1
-                         ))
-    }
-    plot <-  plot + theme_dark()
-    plot
-  })
-  
-  output$lineGraph7Days <- renderPlot({
-    autoInvalidate()
-    reactiveValues$data_selected <- data_selected()
-    node1Colors <- brewer.pal(n = 6, name = 'OrRd')
-    node2Colors <- brewer.pal(n = 6, name = 'BuPu')
-    
-    plot <- ggplot() + ylim(-10, 20)
-    
-    
-    if ("so2" %in% data_selected()) {
-      node1df <-
-        getAOTNodeData7Day(reactiveValues$firstNode,
-                           'chemsense.so2.concentration')
-      node2df <-
-        getAOTNodeData7Day(reactiveValues$secondNode,
-                           'chemsense.so2.concentration')
-      plot <-
-        plot + geom_line(
-          data = node1df,
-          aes(
-            y = node1df$value,
-            x = node1df$timestamp,
-            group = 1
-          ),
-          color = node1Colors[1]
-        )
-      plot <-
-        plot + geom_line(
-          data = node2df,
-          aes(
-            y = node2df$value,
-            x = node2df$timestamp,
-            group = 1
-          ),
-          color = node2Colors[1]
-        )
-    }
-    if ("h2s" %in% data_selected()) {
-      node1df <-
-        getAOTNodeData7Day(reactiveValues$firstNode,
-                           'chemsense.h2s.concentration')
-      node2df <-
-        getAOTNodeData7Day(reactiveValues$secondNode,
-                           'chemsense.h2s.concentration')
-      plot <-
-        plot + geom_line(
-          data = node1df,
-          aes(
-            y = node1df$value,
-            x = node1df$timestamp,
-            group = 1
-          ),
-          color = node1Colors[2]
-        )
-      plot <-
-        plot + geom_line(
-          data = node2df,
-          aes(
-            y = node2df$value,
-            x = node2df$timestamp,
-            group = 1
-          ),
-          color = node2Colors[2]
-        )
-    }
-    if ("o3" %in% data_selected()) {
-      node1df <-
-        getAOTNodeData7Day(reactiveValues$firstNode,
-                           'chemsense.o3.concentration')
-      node2df <-
-        getAOTNodeData7Day(reactiveValues$secondNode,
-                           'chemsense.o3.concentration')
-      plot <-
-        plot + geom_line(
-          data = node1df,
-          aes(
-            y = node1df$value,
-            x = node1df$timestamp,
-            group = 1
-          ),
-          color = node1Colors[3]
-        )
-      plot <-
-        plot + geom_line(
-          data = node2df,
-          aes(
-            y = node2df$value,
-            x = node2df$timestamp,
-            group = 1
-          ),
-          color = node2Colors[3]
-        )
-    }
-    if ("no2" %in% data_selected()) {
-      node1df <-
-        getAOTNodeData7Day(reactiveValues$firstNode,
-                           'chemsense.no2.concentration')
-      node2df <-
-        getAOTNodeData7Day(reactiveValues$secondNode,
-                           'chemsense.no2.concentration')
-      plot <-
-        plot + geom_line(
-          data = node1df,
-          aes(
-            y = node1df$value,
-            x = node1df$timestamp,
-            group = 1
-          ),
-          color = node1Colors[4]
-        )
-      plot <-
-        plot + geom_line(
-          data = node2df,
-          aes(
-            y = node2df$value,
-            x = node2df$timestamp,
-            group = 1
-          ),
-          color = node2Colors[4]
-        )
-    }
-    if ("co" %in% data_selected()) {
-      node1df <-
-        getAOTNodeData7Day(reactiveValues$firstNode,
-                           'chemsense.co.concentration')
-      node2df <-
-        getAOTNodeData7Day(reactiveValues$secondNode,
-                           'chemsense.co.concentration')
-      plot <-
-        plot + geom_line(
-          data = node1df,
-          aes(
-            y = node1df$value,
-            x = node1df$timestamp,
-            group = 1
-          ),
-          color = node1Colors[5]
-        )
-      plot <-
-        plot + geom_line(
-          data = node2df,
-          aes(
-            y = node2df$value,
-            x = node2df$timestamp,
-            group = 1
-          ),
-          color = node2Colors[5]
-        )
-    }
-    if ("pm2_5" %in% data_selected()) {
-      plot <-
-        plot + geom_line(
-          data = node1Data,
-          aes(
-            y = node1Data$pm2_5Value,
-            x = node1Data$timestamp,
-            group = 1
-          ),
-          color = node1Colors[6]
-        )
-      plot <-
-        plot + geom_line(
-          data = node1Data,
           aes(
             y = node2Data$pm2_5Value,
             x = node1Data$timestamp,
