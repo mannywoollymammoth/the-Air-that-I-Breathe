@@ -5,7 +5,9 @@ library(darksky)
 
 all_node_data <- ls.nodes()
 
+# list of all AOT sensors if you want to get data from all of them... probs not
 all_sensors <- ls.sensors()$path
+
 so2_sensors <- all_sensors[grep("so2", all_sensors)]
 h2s_sensors <- all_sensors[grep("h2s", all_sensors)]
 o3_sensors <- all_sensors[grep("o3", all_sensors)]
@@ -17,6 +19,18 @@ temperature_sensors <- all_sensors[grep("temperature", all_sensors)]
 intensity_sensors <-
   all_sensors[grep("light_intensity", all_sensors)]
 humidity_sensors <- all_sensors[grep("humidity", all_sensors)]
+
+# list of one sensor for each AOT type
+so2_sensor <- 'chemsense.so2.concentration'
+h2s_sensor <- 'chemsense.h2s.concentration'
+o3_sensor <- 'chemsense.o3.concentration'
+no2_sensor <- 'chemsense.no2.concentration'
+co_sensor <- 'chemsense.co.concentration'
+pm2_5_sensor <- 'alphasense.opc_n2.pm2_5'
+pm10_sensor <- 'alphasense.opc_n2.pm10 '
+temperature_sensor <- 'chemsense.at0.temperature'
+intensity_sensor <- 'chemsense.si1145.visible_light_intensity'
+humidity_sensor <- 'metsense.htu21d.humidity'
 
 # Set up for Dark Sky API
 Sys.setenv(DARKSKY_API_KEY = scan("dark_sky_api_key.txt", what="character", sep=NULL) )
@@ -52,7 +66,7 @@ getNodeGeoPoints <- function() {
 }
 
 getAddressOfCurrNode <- function(node) {
-  node <- toString(node[5])
+  node <- toString(node[3])
   
   address <-
     subset(all_node_data$address, all_node_data$vsn == node)
@@ -86,6 +100,8 @@ updateTimeFormatForPlot <- function(time) {
   return (newTime)
 }
 
+# returns data for all nodes, not just one specific node
+# based on time period
 getAOTvalue <- function(period, value) {
   time = getTimeFromToday(period)
   time = strftime(time, tz = "UTC", format = "lt:%Y-%m-%dT%H:%M:%S")
@@ -150,70 +166,107 @@ getAOTvalue <- function(period, value) {
   return (df)
 }
 
-
-getNodeData <- function(node, values) {
+# gets all data for one node, 
+# based on @values - which contains the list of pollutants that are requested 
+# & based on time period
+getNodeAOTData <- function(period, node, values) {
+  time = getTimeFromToday(period)
+  time = strftime(time, tz = "UTC", format = "lt:%Y-%m-%dT%H:%M:%S")
   
+  request_size = 200
   
-  obs <- ls.observations(filters = list(sensor = o3_sensors[1], node = node))
+  if(period == "week") {
+    request_size = 10000
+  }
+  
+  obs <- ls.observations(filters = list(sensor = o3_sensors[1], size = request_size, node = node, timestamp = time))
+  
   df <-
     data.frame(
       timestamp = obs$timestamp,
       uom = obs$uom,
-      #sensor_path = obs$sensor_path,
       node_vsn = obs$node_vsn
-    )
+    ) 
+  
+  if(period == "week") {
+    df <-
+      data.frame(
+        timestamp = listShortenerByManny(obs$timestamp),
+        uom = listShortenerByManny(obs$uom),
+        node_vsn = listShortenerByManny(obs$node_vsn)
+      )
+  }
   
   parsed_sensor_list <- list()
   if ("so2" %in% values) {
-    sensor_list <- so2_sensors
-    so2 <- ls.observations(filters = list(sensor = 'chemsense.so2.concentration', node = node))
-    df$so2Value = so2$value
-    
+    so2 <- ls.observations(filters = list(sensor = so2_sensor, size = request_size, node = node, timestamp = time))$value
+    if(period=="week") {
+      so2 <- listShortenerByManny(so2)
+    }
+    df$so2Value = so2
   }
   if ("h2s" %in% values) {
-    
-    sensor_list <- h2s_sensors
-    h2s <- ls.observations(filters = list(sensor = 'chemsense.h2s.concentration', node = node))
-    df$h2sValue = h2s$value
+    h2s <- ls.observations(filters = list(sensor = h2s_sensor, size = request_size, node = node, timestamp = time))$value
+    if(period=="week") {
+      h2s <- listShortenerByManny(h2s)
+    }
+    df$h2sValue = h2s
   }
-  
   if ("o3" %in% values) {
-    sensor_list <- o3_sensors
-    o3 <- ls.observations(filters = list(sensor = 'chemsense.o3.concentration' , node = node))
-    df$o3Value = o3$value
+    o3 <- ls.observations(filters = list(sensor = o3_sensor, size = request_size, node = node, timestamp = time))$value
+    if(period=="week") {
+      o3 <- listShortenerByManny(o3)
+    }
+    df$o3Value = o3
   }
-  
   if ("no2" %in% values) {
-    sensor_list <- no2_sensors
-    no2 <- ls.observations(filters = list(sensor ='chemsense.no2.concentration', node = node))
-    df$no2Value = no2$value
+    no2 <- ls.observations(filters = list(sensor = no2_sensor, size = request_size, node = node, timestamp = time))$value
+    if(period=="week") {
+      no2 <- listShortenerByManny(no2)
+    }
+    df$no2Value = no2
   }
   if ("co" %in% values) {
-    sensor_list <- co_sensors
-    co <- ls.observations(filters = list(sensor = 'chemsense.co.concentration', node = node))
-    df$coValue = co$value
+    co <- ls.observations(filters = list(sensor = co_sensor, size = request_size, node = node, timestamp = time))$value
+    if(period=="week") {
+      co <- listShortenerByManny(co)
+    }
+    df$coValue = co
   }
   if ("pm2_5" %in% values) {
-    sensor_list <- pm2_5_sensors
-    pm2_5 <- ls.observations(filters = list(sensor = sensor_list[1], node = node))
-    df$pm2_5Value = pm2_5$value
+    pm2_5 <- ls.observations(filters = list(sensor = pm2_5_sensor, size = request_size, node = node, timestamp = time))$value
+    if(period=="week") {
+      pm2_5 <- listShortenerByManny(pm2_5)
+    }
+    df$pm2_5Value = pm2_5
   }
   if ("pm10" %in% values) {
-    sensor_list <- pm10_sensors
-    pm10 <- ls.observations(filters = list(sensor = sensor_list[1], node = node))
-    df$pm10Value = pm10$value
+    pm10 <- ls.observations(filters = list(sensor = pm10_sensor, size = request_size, node = node, timestamp = time))$value
+    if(period=="week") {
+      pm10 <- listShortenerByManny(pm10)
+    }
+    df$pm10Value = pm10
   }
   if ("temperature" %in% values) {
-    
-    sensor_list <- temperature_sensors
+    temper <- ls.observations(filters = list(sensor = temperature_sensor, size = request_size, node = node, timestamp = time))$value
+    if(period=="week") {
+      temper <- listShortenerByManny(temper)
+    }
+    df$tempValue = temper
   }
   if ("intensity" %in% values) {
-    
-    sensor_list <- intensity_sensors
+    intensity <- ls.observations(filters = list(sensor = intensity_sensor, size = request_size, node = node, timestamp = time))$value
+    if(period=="week") {
+      intensity <- listShortenerByManny(intensity)
+    }
+    df$intensityValue = intensity
   }
   if ("humidity" %in% values) {
-    
-    sensor_list <- humidity_sensors
+    humid <- ls.observations(filters = list(sensor = humidity_sensor, size = request_size, node = node, timestamp = time))$value
+    if(period=="week") {
+      humid <- listShortenerByManny(humid)
+    }
+    df$humidityValue = humid
   }
   
   # add address of current node
@@ -221,11 +274,36 @@ getNodeData <- function(node, values) {
   
   # change format of time column
   df$timestamp <- apply(df, 1, updateTimeFormatForPlot)
-  
+
   return(df)
-  
 }
 
+listShortenerByManny <- function(orig) {
+  new =  orig[c(
+    TRUE,
+    FALSE,
+    FALSE,
+    FALSE,
+    FALSE,
+    FALSE,
+    FALSE,
+    FALSE,
+    FALSE,
+    FALSE,
+    FALSE,
+    FALSE,
+    FALSE,
+    FALSE,
+    FALSE,
+    FALSE,
+    FALSE,
+    FALSE,
+    FALSE,
+    FALSE
+  )]
+  
+  new
+}
 
 
 getNodeTemps <- function() {
@@ -304,9 +382,12 @@ getNodeDarkSkyData <- function(period, lat, long) {
       curr <- rbind(curr, curr2)
       
     }
-  } else if (period=="day") {
+  } 
+  else if (period=="day") {
     curr <- get_forecast_for(lat, long, time)$hourly
   } else {
+    curr <- get_forecast_for(lat, long, time)$currently
+    print(get_forecast_for(lat, long, time))
   }
   
   #TODO: on the website it says he wanted the ozone as well.. but that's not an option....?

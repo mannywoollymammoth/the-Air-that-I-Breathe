@@ -14,87 +14,124 @@ source('DataModeler.R')
 
 AOTMap <- function(id) {
   nameSpace <- NS(id)
-  
-  fluidRow(column(
-    7,
-    box(
-      title = "Leaflet Map Parameters",
-      solidHeader = TRUE,
-      status = "primary",
-      width = 12,
-      checkboxGroupInput(
-        nameSpace("data_selected"),
-        inline = TRUE,
-        "Data to show:",
-        c(
-          "so2",
-          "h2s",
-          "o3",
-          "no2",
-          "co",
-          "pm2_5",
-          "pm10",
-          "temperature",
-          "intensity",
-          "humidity"
+  fluidRow( # This is the main fluid row
+    
+    fluidRow(column( #graph column starts
+      7,
+      tabBox(
+        title = "Graphs for different variables and times",
+        # The id lets us use input$tabset1 on the server to find the current tab
+        id = "tabset1",
+        width = 12,
+        height = 550,
+        tabPanel(
+          "Current",
+          box(
+            solidHeader = TRUE,
+            status = "primary",
+            width = 12,
+            plotOutput(nameSpace("lineGraphCurrent"))
+          )
         ),
-        selected = TRUE
-      )
-    ),
-    tabBox(
-      title = "Graph tabBox",
-      # The id lets us use input$tabset1 on the server to find the current tab
-      id = "tabset1",
-      width = 8,
-      height = 550,
-      tabPanel(
-        "Current",
-        box(
-          solidHeader = TRUE,
-          status = "primary",
-          width = 12,
-          plotOutput(nameSpace("lineGraphCurrent"))
-        )
-      ),
-      tabPanel(
-        "7 Days",
-        box(
-          solidHeader = TRUE,
-          status = "primary",
-          width = 12,
-          plotOutput(nameSpace("lineGraph7Days"))
+        tabPanel(
+          "7 Days",
+          box(
+            solidHeader = TRUE,
+            status = "primary",
+            width = 12,
+            plotOutput(nameSpace("lineGraph7Days"))
+          )
         )
       )
+    ), # graph column ends
+    
+    column( # map column starts
+      5,
+      tabBox(
+        title = "Leaflet Map",
+        width = 12,
+        tabPanel("Tab1", leafletOutput(nameSpace("Normal"), height = 600)),
+        tabPanel("Tab2", leafletOutput(nameSpace("StamenToner"), height = 600)),
+        tabPanel("Tab3", leafletOutput(nameSpace("NightSky"), height = 600))
+      )
+    ) # map column ends
     ),
     
-    tabBox(
-      title = "Node 1 Data",
-      id = "tabset2",
-      width = 8,
-      height = 550,
-      tabPanel(
-        "AOT Data",
-        box(
-          solidHeader = TRUE,
-          status = "primary",
-          width = 12,
-          dataTableOutput(nameSpace("nodeTable1"), width = "100%")
+    fluidRow( # This is the fluid row for the 2 node tables
+      column(1, # options
+             fluidRow(
+               box(
+                 title = "Parameters for graphs/tables",
+                 solidHeader = TRUE,
+                 status = "primary",
+                 width = 12,
+                 checkboxGroupInput(
+                   nameSpace("data_selected"),
+                   inline = TRUE,
+                   "Data to show:",
+                   c(
+                     "so2",
+                     "h2s",
+                     "o3",
+                     "no2",
+                     "co",
+                     "pm2_5",
+                     "pm10",
+                     "temperature",
+                     "intensity",
+                     "humidity"
+                   ),
+                   selected = TRUE
+                 )
+               )
+             ),
+             fluidRow(
+               box(
+                 title = "Timeframe for Data Tables",
+                 solidHeader = TRUE,
+                 status = "primary",
+                 width = 12,
+                 radioButtons(
+                   nameSpace("timeframe"),
+                   inline = TRUE,
+                   "Data to show:",
+                   c("current",
+                     "day",
+                     "week"),
+                   selected = c("current")
+                 )
+               )
+             )
+             ), # end of options
+      column(5, # Column for Node 1 data
+        tabBox(
+          title = "Node 1 Data",
+          id = "tabset2",
+          height = 550,
+          tabPanel(
+            "AOT Data",
+            box(
+              solidHeader = TRUE,
+              status = "primary",
+              width = 12,
+              dataTableOutput(nameSpace("AOTTableNode1"), width = "100%")
+            )
+          ),
+          tabPanel(
+            "Dark Sky Data",
+            box(
+              solidHeader = TRUE,
+              status = "primary",
+              width = 12,
+              dataTableOutput(nameSpace("darkSkyTableNode1"), width = "100%")
+            )
+          )
         )
-      ),
-      tabPanel(
-        "Dark Sky Data",
-        box(
-          solidHeader = TRUE,
-          status = "primary",
-          width = 12,
-          dataTableOutput(nameSpace("darkSkyTableNode1Day"), width = "100%")
-        )
-      )
-    ),
+  ), # end of column for node 1 data
+  column(5, # Column for Node 2 data
     tabBox(
       title = "Node 2 Data",
       id = "tabset3",
-      width = 8,
       height = 550,
       tabPanel(
         "AOT Data",
@@ -102,7 +139,7 @@ AOTMap <- function(id) {
           solidHeader = TRUE,
           status = "primary",
           width = 12,
-          dataTableOutput(nameSpace("nodeTable2"), width = "100%")
+          dataTableOutput(nameSpace("AOTTableNode2"), width = "100%")
         )
       ),
       tabPanel(
@@ -111,21 +148,13 @@ AOTMap <- function(id) {
           solidHeader = TRUE,
           status = "primary",
           width = 12,
-          dataTableOutput(nameSpace("darkSkyTableNode2Day"), width = "100%")
+          dataTableOutput(nameSpace("darkSkyTableNode2"), width = "100%")
         )
       )
     )
-  ),
-  column(
-    5,
-    tabBox(
-      title = "Leaflet Map",
-      width = 12,
-      tabPanel("Tab1", leafletOutput(nameSpace("Normal"), height = 600)),
-      tabPanel("Tab2", leafletOutput(nameSpace("StamenToner"), height = 600)),
-      tabPanel("Tab3", leafletOutput(nameSpace("NightSky"), height = 600))
-    )
-  ))
+  ) # end of column for node 1 data 
+  ) # this is where the fluid row for the two node tables ends
+  )
   
 }
 
@@ -149,13 +178,37 @@ AOTmapServer <- function(input, output, session) {
   reactiveValues$curr2NodeLong <- -87.62768
   
   reactiveValues$markerState <- 1
+  
   data_selected <- reactive(input$data_selected)
   reactiveValues$data_selected <- NULL
+  
   autoInvalidate <- reactiveTimer(60000) # one minute
   
-  node1CurrentDataReactive <- reactive({
+  # ===================================================== AOT
+  
+  node1AOTCurrentDataReactive <- reactive({
     tryCatch({
-      getNodeData(reactiveValues$firstNode,
+      getNodeAOTData("current", reactiveValues$firstNode,
+                     reactiveValues$data_selected)
+    },
+    error = function(cond) {
+      showErrorMessageForNoNodeData()
+    })
+  })
+  
+  node2AOTCurrentDataReactive <- reactive({
+    tryCatch({
+      getNodeAOTData("current", reactiveValues$firstNode,
+                     reactiveValues$data_selected)
+    },
+    error = function(cond) {
+      showErrorMessageForNoNodeData()
+    })
+  })
+  
+  node1AOTDayDataReactive <- reactive({
+    tryCatch({
+      getNodeAOTData("day", reactiveValues$firstNode,
                   reactiveValues$data_selected)
     },
     error = function(cond) {
@@ -163,9 +216,9 @@ AOTmapServer <- function(input, output, session) {
     })
   })
   
-  node2CurrentDataReactive <- reactive({
+  node2AOTDayDataReactive <- reactive({
     tryCatch({
-      getNodeData(reactiveValues$secondNode,
+      getNodeAOTData("day", reactiveValues$secondNode,
                   reactiveValues$data_selected)
     },
     error = function(cond) {
@@ -173,9 +226,10 @@ AOTmapServer <- function(input, output, session) {
     })
   })
   
-  node1weekDataReactive <- reactive({
+  node1AOTWeekDataReactive <- reactive({
     tryCatch({
-      getNodeData7Days(reactiveValues$firstNode,
+      getNodeAOTData("week", 
+                         reactiveValues$firstNode,
                        reactiveValues$data_selected)
     },
     error = function(cond) {
@@ -183,10 +237,36 @@ AOTmapServer <- function(input, output, session) {
     })
   })
   
-  node2weekDataReactive <- reactive({
+  node2AOTWeekDataReactive <- reactive({
     tryCatch({
-      getNodeData7Days(reactiveValues$secondNode,
+      getNodeAOTData("week", 
+                         reactiveValues$secondNode,
                        reactiveValues$data_selected)
+    },
+    error = function(cond) {
+      print(cond)
+      showErrorMessageForNoNodeData()
+    })
+  })
+  
+  # ====================================================== DARK SKY
+  
+  darkSkyNodeDataNode1CurrentReactive <- reactive({
+    tryCatch({
+      getNodeDarkSkyData("current",
+                         reactiveValues$curr1NodeLat,
+                         reactiveValues$curr1NodeLong)
+    },
+    error = function(cond) {
+      showErrorMessageForNoNodeData()
+    })
+  })
+  
+  darkSkyNodeDataNode2CurrentReactive <- reactive({
+    tryCatch({
+      getNodeDarkSkyData("current",
+                         reactiveValues$curr1NodeLat,
+                         reactiveValues$curr1NodeLong)
     },
     error = function(cond) {
       showErrorMessageForNoNodeData()
@@ -194,9 +274,10 @@ AOTmapServer <- function(input, output, session) {
   })
   
   darkSkyNodeDataNode1DayReactive <- reactive({
-
     tryCatch({
-      getNodeDarkSkyData("day", reactiveValues$curr1NodeLat, reactiveValues$curr1NodeLong)
+      getNodeDarkSkyData("day",
+                         reactiveValues$curr1NodeLat,
+                         reactiveValues$curr1NodeLong)
     },
     error = function(cond) {
       showErrorMessageForNoNodeData()
@@ -204,9 +285,32 @@ AOTmapServer <- function(input, output, session) {
   })
   
   darkSkyNodeDataNode2DayReactive <- reactive({
-    
     tryCatch({
-      getNodeDarkSkyData("day", reactiveValues$curr2NodeLat, reactiveValues$curr2NodeLong)
+      getNodeDarkSkyData("day",
+                         reactiveValues$curr2NodeLat,
+                         reactiveValues$curr2NodeLong)
+    },
+    error = function(cond) {
+      showErrorMessageForNoNodeData()
+    })
+  })
+  
+  darkSkyNodeDataNode1WeekReactive <- reactive({
+    tryCatch({
+      getNodeDarkSkyData("week",
+                         reactiveValues$curr1NodeLat,
+                         reactiveValues$curr1NodeLong)
+    },
+    error = function(cond) {
+      showErrorMessageForNoNodeData()
+    })
+  })
+  
+  darkSkyNodeDataNode2WeekReactive <- reactive({
+    tryCatch({
+      getNodeDarkSkyData("week",
+                         reactiveValues$curr1NodeLat,
+                         reactiveValues$curr1NodeLong)
     },
     error = function(cond) {
       showErrorMessageForNoNodeData()
@@ -320,7 +424,7 @@ AOTmapServer <- function(input, output, session) {
     #TODO: add lat long here
     updateNodesWhenClicked(reactiveValues$currNode, "NightSky")
   })
-
+  
   showErrorMessageForNoNodeData <- function() {
     # TODO: lol this is a terrible way to write this code I'm sure but I couldn't figure it out
     janky_solution = ""
@@ -332,7 +436,90 @@ AOTmapServer <- function(input, output, session) {
     )
   }
   
-  # ============================================================ UI
+  # ============================================================ functions that do things
+  
+  updateTimeFormatForPlot <- function(time, sensor) {
+    time <- time[1]
+    newTime <-
+      strptime(toString(time), tz = "UTC", format = "%Y-%m-%dT%H:%M:%S")
+    newTime <-
+      strftime(newTime, tz = "UTC", format = "%Y-%m-%d %H:%M:%S")
+    return (newTime)
+  }
+  
+  getAOTNodeData7Day <- function(node, sensor) {
+    currDay <- Sys.Date()
+    time <- Sys.time()
+    currTime <- strftime(now, format = "%H:%M:%S")
+    weekTimeStamp <- paste("lt:", currDay, "T", currTime, sep = "")
+    
+    Data <-
+      ls.observations(filters = list(
+        size = 10000,
+        sensor = sensor,
+        node = node,
+        timestamp = weekTimeStamp
+      ))
+    df <- data.frame(
+      timestamp = Data$timestamp,
+      uom = Data$uom,
+      node_vsn = Data$node_vsn,
+      value <- Data$value
+    )
+    
+    Data <-
+      df$value[c(
+        TRUE,
+        FALSE,
+        FALSE,
+        FALSE,
+        FALSE,
+        FALSE,
+        FALSE,
+        FALSE,
+        FALSE,
+        FALSE,
+        FALSE,
+        FALSE,
+        FALSE,
+        FALSE,
+        FALSE,
+        FALSE,
+        FALSE,
+        FALSE,
+        FALSE,
+        FALSE
+      )]
+    TimeStamp <-
+      df$timestamp[c(
+        TRUE,
+        FALSE,
+        FALSE,
+        FALSE,
+        FALSE,
+        FALSE,
+        FALSE,
+        FALSE,
+        FALSE,
+        FALSE,
+        FALSE,
+        FALSE,
+        FALSE,
+        FALSE,
+        FALSE,
+        FALSE,
+        FALSE,
+        FALSE,
+        FALSE,
+        FALSE
+      )]
+    
+    df <- data.frame(timestamp <- TimeStamp, value <- Data)
+    df$timestamp <- apply(df, 1, updateTimeFormatForPlot)
+    return(df)
+  }
+  
+  # ============================================================ UI - Maps
   
   output$Normal <- renderLeaflet({
     coordinates <- getNodeGeoPoints()
@@ -354,7 +541,7 @@ AOTmapServer <- function(input, output, session) {
       layerId = coordinates$vsn
     )
   })
-
+  
   output$StamenToner <- renderLeaflet({
     coordinates <- getNodeGeoPoints()
     
@@ -399,21 +586,73 @@ AOTmapServer <- function(input, output, session) {
     )
   })
   
-  output$nodeTable1 <- renderDataTable({
-    data <- node1CurrentDataReactive()
+  # ============================================================ UI - Tables
+  
+  output$AOTTableNode1 <- renderDataTable({
+    autoInvalidate()
+    data <- NULL
+    
+    if (input$timeframe == "current") {
+      data <- node1AOTCurrentDataReactive()
+    } else if (input$timeframe == "day") {
+      data <- node1AOTDayDataReactive()
+    } else if (input$timeframe == "week") {
+      data <- node1AOTWeekDataReactive()
+    }
+    
     datatable(data, options = list(pageLength = 5))
   })
   
-  output$nodeTable2 <- renderDataTable({
-    data <- node2CurrentDataReactive()
+  output$AOTTableNode2 <- renderDataTable({
+    autoInvalidate()
+    data <- NULL
+    
+    if (input$timeframe == "current") {
+      data <- node2AOTCurrentDataReactive()
+    } else if (input$timeframe == "day") {
+      data <- node2AOTDayDataReactive()
+    } else if (input$timeframe == "week") {
+      data <- node2AOTWeekDataReactive()
+    }
+    
     datatable(data, options = list(pageLength = 5))
   })
+  
+  output$darkSkyTableNode1 <- renderDataTable({
+    autoInvalidate()
+    data <- NULL
+    
+    if (input$timeframe == "current") {
+      data <- darkSkyNodeDataNode1CurrentReactive()
+    } else if (input$timeframe == "day") {
+      data <- darkSkyNodeDataNode1DayReactive()
+    } else if (input$timeframe == "week") {
+      data <- darkSkyNodeDataNode1WeekReactive()
+    }
+    datatable(data, options = list(pageLength = 5))
+  })
+  
+  output$darkSkyTableNode2 <- renderDataTable({
+    autoInvalidate()
+    data <- NULL
+    
+    if (input$timeframe == "current") {
+      data <- darkSkyNodeDataNode2CurrentReactive()
+    } else if (input$timeframe == "day") {
+      data <- darkSkyNodeDataNode2DayReactive()
+    } else if (input$timeframe == "week") {
+      data <- darkSkyNodeDataNode2WeekReactive()
+    }
+    datatable(data, options = list(pageLength = 5))
+  })
+  
+  # ============================================================ UI - Graphs
   
   output$lineGraphCurrent <- renderPlot({
     autoInvalidate()
     reactiveValues$data_selected <- data_selected()
-    node1Data <- node1CurrentDataReactive()
-    node2Data <- node2CurrentDataReactive()
+    node1Data <- node1AOTDayDataReactive()
+    node2Data <- node2AOTDayDataReactive()
     
     node1Colors <- brewer.pal(n = 6, name = 'OrRd')
     node2Colors <- brewer.pal(n = 6, name = 'BuPu')
@@ -565,87 +804,6 @@ AOTmapServer <- function(input, output, session) {
     plot
   })
   
-  updateTimeFormatForPlot <- function(time, sensor) {
-    time <- time[1]
-    newTime <-
-      strptime(toString(time), tz = "UTC", format = "%Y-%m-%dT%H:%M:%S")
-    newTime <-
-      strftime(newTime, tz = "UTC", format = "%Y-%m-%d %H:%M:%S")
-    return (newTime)
-  }
-  
-  getData7Day <- function(node, sensor) {
-    currDay <- Sys.Date()
-    time <- Sys.time()
-    currTime <- strftime(now, format = "%H:%M:%S")
-    weekTimeStamp <- paste("lt:", currDay, "T", currTime, sep = "")
-    
-    Data <-
-      ls.observations(filters = list(
-        size = 10000,
-        sensor = sensor,
-        node = node,
-        timestamp = weekTimeStamp
-      ))
-    df <- data.frame(
-      timestamp = Data$timestamp,
-      uom = Data$uom,
-      node_vsn = Data$node_vsn,
-      value <- Data$value
-    )
-    
-    Data <-
-      df$value[c(
-        TRUE,
-        FALSE,
-        FALSE,
-        FALSE,
-        FALSE,
-        FALSE,
-        FALSE,
-        FALSE,
-        FALSE,
-        FALSE,
-        FALSE,
-        FALSE,
-        FALSE,
-        FALSE,
-        FALSE,
-        FALSE,
-        FALSE,
-        FALSE,
-        FALSE,
-        FALSE
-      )]
-    TimeStamp <-
-      df$timestamp[c(
-        TRUE,
-        FALSE,
-        FALSE,
-        FALSE,
-        FALSE,
-        FALSE,
-        FALSE,
-        FALSE,
-        FALSE,
-        FALSE,
-        FALSE,
-        FALSE,
-        FALSE,
-        FALSE,
-        FALSE,
-        FALSE,
-        FALSE,
-        FALSE,
-        FALSE,
-        FALSE
-      )]
-    
-    df <- data.frame(timestamp <- TimeStamp, value <- Data)
-    df$timestamp <- apply(df, 1, updateTimeFormatForPlot)
-    return(df)
-  }
-  
   output$lineGraph7Days <- renderPlot({
     autoInvalidate()
     reactiveValues$data_selected <- data_selected()
@@ -657,11 +815,11 @@ AOTmapServer <- function(input, output, session) {
     
     if ("so2" %in% data_selected()) {
       node1df <-
-        getData7Day(reactiveValues$firstNode,
-                    'chemsense.so2.concentration')
+        getAOTNodeData7Day(reactiveValues$firstNode,
+                           'chemsense.so2.concentration')
       node2df <-
-        getData7Day(reactiveValues$secondNode,
-                    'chemsense.so2.concentration')
+        getAOTNodeData7Day(reactiveValues$secondNode,
+                           'chemsense.so2.concentration')
       plot <-
         plot + geom_line(
           data = node1df,
@@ -685,11 +843,11 @@ AOTmapServer <- function(input, output, session) {
     }
     if ("h2s" %in% data_selected()) {
       node1df <-
-        getData7Day(reactiveValues$firstNode,
-                    'chemsense.h2s.concentration')
+        getAOTNodeData7Day(reactiveValues$firstNode,
+                           'chemsense.h2s.concentration')
       node2df <-
-        getData7Day(reactiveValues$secondNode,
-                    'chemsense.h2s.concentration')
+        getAOTNodeData7Day(reactiveValues$secondNode,
+                           'chemsense.h2s.concentration')
       plot <-
         plot + geom_line(
           data = node1df,
@@ -713,11 +871,11 @@ AOTmapServer <- function(input, output, session) {
     }
     if ("o3" %in% data_selected()) {
       node1df <-
-        getData7Day(reactiveValues$firstNode,
-                    'chemsense.o3.concentration')
+        getAOTNodeData7Day(reactiveValues$firstNode,
+                           'chemsense.o3.concentration')
       node2df <-
-        getData7Day(reactiveValues$secondNode,
-                    'chemsense.o3.concentration')
+        getAOTNodeData7Day(reactiveValues$secondNode,
+                           'chemsense.o3.concentration')
       plot <-
         plot + geom_line(
           data = node1df,
@@ -741,11 +899,11 @@ AOTmapServer <- function(input, output, session) {
     }
     if ("no2" %in% data_selected()) {
       node1df <-
-        getData7Day(reactiveValues$firstNode,
-                    'chemsense.no2.concentration')
+        getAOTNodeData7Day(reactiveValues$firstNode,
+                           'chemsense.no2.concentration')
       node2df <-
-        getData7Day(reactiveValues$secondNode,
-                    'chemsense.no2.concentration')
+        getAOTNodeData7Day(reactiveValues$secondNode,
+                           'chemsense.no2.concentration')
       plot <-
         plot + geom_line(
           data = node1df,
@@ -769,11 +927,11 @@ AOTmapServer <- function(input, output, session) {
     }
     if ("co" %in% data_selected()) {
       node1df <-
-        getData7Day(reactiveValues$firstNode,
-                    'chemsense.co.concentration')
+        getAOTNodeData7Day(reactiveValues$firstNode,
+                           'chemsense.co.concentration')
       node2df <-
-        getData7Day(reactiveValues$secondNode,
-                    'chemsense.co.concentration')
+        getAOTNodeData7Day(reactiveValues$secondNode,
+                           'chemsense.co.concentration')
       plot <-
         plot + geom_line(
           data = node1df,
@@ -828,19 +986,6 @@ AOTmapServer <- function(input, output, session) {
     }
     plot <-  plot + theme_dark()
     plot
-    
-    
-    
-  })
-  
-  output$darkSkyTableNode1Day <- renderDataTable({
-    data <- darkSkyNodeDataNode1DayReactive()
-    datatable(data, options = list(pageLength = 5))
-  })
-  
-  output$darkSkyTableNode2Day <- renderDataTable({
-    data <- darkSkyNodeDataNode2DayReactive()
-    datatable(data, options = list(pageLength = 5))
   })
   
 }
