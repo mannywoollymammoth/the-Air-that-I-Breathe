@@ -316,8 +316,6 @@ getNodeAOTData <- function(period, node, values) {
   # change format of time column
   df$timestamp <- apply(df, 1, updateTimeFormatForPlot)
   
-  print(df$timestamp)
-  
   return(df)
 }
 
@@ -378,7 +376,7 @@ getNodeTemps <- function() {
   
 }
 
-getNodeDarkSkyData <- function(period, lat, long) {
+getNodeDarkSkyData <- function(period, lat, long, values) {
   # get data based on the time period requested and the lat/long of the current node
   time = getTimeFromToday(period)
   
@@ -424,9 +422,9 @@ getNodeDarkSkyData <- function(period, lat, long) {
   } 
   else if (period=="day") {
     curr <- get_forecast_for(lat, long, time)$hourly
-  } else {
+  } 
+  else {
     curr <- get_forecast_for(lat, long, time)$currently
-    print(get_forecast_for(lat, long, time))
   }
   
   #TODO: on the website it says he wanted the ozone as well.. but that's not an option....?
@@ -442,6 +440,36 @@ getNodeDarkSkyData <- function(period, lat, long) {
     visibility = curr$visibility,
     pressure = curr$pressure
   )
+  
+  # drop all columns that are not included in values
+  drops <- numeric()
+  print(values)
+  
+  if(!"temperature" %in% values){
+    drops <- append(drops, "temperature")
+  }
+  if(!"humidity" %in% values){
+    drops <- append(drops, "humidity")
+  }
+  if(!"wind speed" %in% values){
+    drops <- append(drops, "windSpeed")
+  }
+  if(!"wind bearing" %in% values){
+    drops <- append(drops, "windBearing")
+  }
+  if(!"cloud cover" %in% values){
+    drops <- append(drops, "cloudCover")
+  }
+  if(!"visibility" %in% values){
+    drops <- append(drops, "visibility")
+  }
+  if(!"pressure" %in% values){
+    drops <- append(drops, "pressure")
+  }
+  
+  if(length(drops) != 0) {
+    df <- df[, !(names(df) %in% drops)]
+  }
   
   df
 }

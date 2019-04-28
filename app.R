@@ -15,7 +15,7 @@ library(shinyjs)
 
 source('AOTMap.R')
 source('AOTTable.R')
-# Define UI for application that draws a histogram
+
 ui <- dashboardPage(
   dashboardHeader(),
   dashboardSidebar(sidebarMenu(

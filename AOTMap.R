@@ -43,7 +43,7 @@ AOTMap <- function(id) {
       column(1, # options
              fluidRow(
                box(
-                 title = "Parameters for graphs/tables",
+                 title = "AOT/OpenAQ Parameters",
                  solidHeader = TRUE,
                  status = "primary",
                  width = 12,
@@ -62,6 +62,29 @@ AOTMap <- function(id) {
                      "temperature",
                      "intensity",
                      "humidity"
+                   ),
+                   selected = TRUE
+                 )
+               )
+             ),
+             fluidRow(
+               box(
+                 title = "Dark Sky Parameters",
+                 solidHeader = TRUE,
+                 status = "primary",
+                 width = 12,
+                 checkboxGroupInput(
+                   nameSpace("ds_data_selected"),
+                   inline = TRUE,
+                   "Data to show:",
+                   c(
+                     "temperature",
+                     "humidity",
+                     "wind speed",
+                     "wind bearing",
+                     "cloud cover",
+                     "visibility",
+                     "pressure"
                    ),
                    selected = TRUE
                  )
@@ -151,6 +174,7 @@ AOTMap <- function(id) {
 
 AOTmapServer <- function(input, output, session) {
   dataSelectedReactive <- reactive(input$data_selected)
+  ds_dataSelectedReactive <- reactive(input$ds_data_selected)
   reactiveValues <- reactiveValues()
   
   # set a default val to start with
@@ -171,7 +195,9 @@ AOTmapServer <- function(input, output, session) {
   reactiveValues$markerState <- 1
   
   data_selected <- reactive(input$data_selected)
+  ds_data_selected <- reactive(input$ds_data_selected)
   reactiveValues$data_selected <- NULL
+  reactiveValues$ds_data_selected <- NULL
   
   autoInvalidate <- reactiveTimer(60000) # one minute
   
@@ -235,7 +261,7 @@ AOTmapServer <- function(input, output, session) {
                        reactiveValues$data_selected)
     },
     error = function(cond) {
-      print(cond)
+      #print(cond)
       showErrorMessageForNoNodeData()
     })
   })
@@ -246,7 +272,8 @@ AOTmapServer <- function(input, output, session) {
     tryCatch({
       getNodeDarkSkyData("current",
                          reactiveValues$curr1NodeLat,
-                         reactiveValues$curr1NodeLong)
+                         reactiveValues$curr1NodeLong,
+                         reactiveValues$ds_data_selected)
     },
     error = function(cond) {
       showErrorMessageForNoNodeData()
@@ -257,7 +284,8 @@ AOTmapServer <- function(input, output, session) {
     tryCatch({
       getNodeDarkSkyData("current",
                          reactiveValues$curr1NodeLat,
-                         reactiveValues$curr1NodeLong)
+                         reactiveValues$curr1NodeLong,
+                         reactiveValues$ds_data_selected)
     },
     error = function(cond) {
       showErrorMessageForNoNodeData()
@@ -268,7 +296,8 @@ AOTmapServer <- function(input, output, session) {
     tryCatch({
       getNodeDarkSkyData("day",
                          reactiveValues$curr1NodeLat,
-                         reactiveValues$curr1NodeLong)
+                         reactiveValues$curr1NodeLong,
+                         reactiveValues$ds_data_selected)
     },
     error = function(cond) {
       showErrorMessageForNoNodeData()
@@ -279,7 +308,8 @@ AOTmapServer <- function(input, output, session) {
     tryCatch({
       getNodeDarkSkyData("day",
                          reactiveValues$curr2NodeLat,
-                         reactiveValues$curr2NodeLong)
+                         reactiveValues$curr2NodeLong,
+                         reactiveValues$ds_data_selected)
     },
     error = function(cond) {
       showErrorMessageForNoNodeData()
@@ -290,7 +320,8 @@ AOTmapServer <- function(input, output, session) {
     tryCatch({
       getNodeDarkSkyData("week",
                          reactiveValues$curr1NodeLat,
-                         reactiveValues$curr1NodeLong)
+                         reactiveValues$curr1NodeLong,
+                         reactiveValues$ds_data_selected)
     },
     error = function(cond) {
       showErrorMessageForNoNodeData()
@@ -301,7 +332,8 @@ AOTmapServer <- function(input, output, session) {
     tryCatch({
       getNodeDarkSkyData("week",
                          reactiveValues$curr1NodeLat,
-                         reactiveValues$curr1NodeLong)
+                         reactiveValues$curr1NodeLong,
+                         reactiveValues$ds_data_selected)
     },
     error = function(cond) {
       showErrorMessageForNoNodeData()
@@ -540,6 +572,7 @@ AOTmapServer <- function(input, output, session) {
   
   output$darkSkyTableNode1 <- renderDataTable({
     autoInvalidate()
+    reactiveValues$ds_data_selected <- ds_data_selected()
     data <- NULL
     
     if (input$timeframe == "current") {
@@ -554,6 +587,7 @@ AOTmapServer <- function(input, output, session) {
   
   output$darkSkyTableNode2 <- renderDataTable({
     autoInvalidate()
+    reactiveValues$ds_data_selected <- ds_data_selected()
     data <- NULL
     
     if (input$timeframe == "current") {
