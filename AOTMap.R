@@ -427,6 +427,13 @@ AOTmapServer <- function(input, output, session) {
     )
   }
   
+  # ============================================================ helpers
+  
+  updateTimeFormat <- function(time) {
+    newTime <- as.POSIXct(strptime(newTime, tz = "UTC", format = "%Y-%m-%d %H:%M:%S"))
+    return (newTime)
+  }
+  
   # ============================================================ UI - Maps
   
   output$Normal <- renderLeaflet({
@@ -577,153 +584,200 @@ AOTmapServer <- function(input, output, session) {
       node2Data <- node2AOTWeekDataReactive()
     }
     
+    # convert timestamp to posixct
+    #node1Data$timestamp <- apply(df, 1, updateTimeFormat)
+    #node2Data$timestamp <- apply(df, 1, updateTimeFormat)
+    
     node1Colors <- brewer.pal(n = 6, name = 'OrRd')
     node2Colors <- brewer.pal(n = 6, name = 'BuPu')
     
     plot <- ggplot() + ylim(-10, 20)
     
     if ("so2" %in% data_selected()) {
+      if(node1Data$so2[1] != "N/A"){
       plot <-
         plot + geom_line(
           data = node1Data,
           aes(
-            y = node1Data$so2Value,
+            y = node1Data$so2,
             x = node1Data$timestamp,
             group = 1
           ),
           color = node1Colors[1]
         )
+      }
+      if(node2Data$so2[1] != "N/A"){
       plot <-
         plot + geom_line(
           data = node2Data,
           aes(
-            y = node2Data$so2Value,
+            y = node2Data$so2,
             x = node1Data$timestamp,
             group = 1
           ),
           color = node2Colors[1]
         )
+      }
     }
     if ("h2s" %in% data_selected()) {
+      if(node1Data$h2s[1] != "N/A"){
       plot <-
         plot + geom_line(
           data = node1Data,
           aes(
-            y = node1Data$h2sValue,
+            y = node1Data$h2s,
             x = node1Data$timestamp,
             group = 1
           ),
           color = node1Colors[2]
         )
+      }
+      if(node2Data$h2s[1] != "N/A"){
       plot <-
         plot + geom_line(
           data = node2Data,
           aes(
-            y = node2Data$h2sValue,
+            y = node2Data$h2s,
             x = node1Data$timestamp,
             group = 1
           ),
           color = node2Colors[2]
         )
+      }
     }
     if ("o3" %in% data_selected()) {
+      if(node1Data$o3[1] != "N/A"){
       plot <-
         plot + geom_line(
           data = node1Data,
           aes(
-            y = node1Data$o3Value,
+            y = node1Data$o3,
             x = node1Data$timestamp,
             group = 1
           ),
           color = node1Colors[3]
         )
+      }
+      if(node2Data$o3[1] != "N/A"){
       plot <-
         plot + geom_line(
           data = node2Data,
           aes(
-            y = node2Data$o3Value,
+            y = node2Data$o3,
             x = node1Data$timestamp,
             group = 1
           ),
           color = node2Colors[3]
         )
+      }
     }
     if ("no2" %in% data_selected()) {
+      if(node1Data$no2[1] != "N/A"){
       plot <-
         plot + geom_line(
           data = node1Data,
           aes(
-            y = node1Data$no2Value,
+            y = node1Data$no2,
             x = node1Data$timestamp,
             group = 1
           ),
           color = node1Colors[4]
         )
+      }
+      if(node2Data$no2[1] != "N/A"){
       plot <-
         plot + geom_line(
           data = node2Data,
           aes(
-            y = node2Data$no2Value,
+            y = node2Data$no2,
             x = node1Data$timestamp,
             group = 1
           ),
           color = node2Colors[4]
         )
+      }
     }
     if ("co" %in% data_selected()) {
+      if(node1Data$co[1] != "N/A"){
       plot <-
         plot + geom_line(
           data = node1Data,
           aes(
-            y = node1Data$coValue,
+            y = node1Data$co,
             x = node1Data$timestamp,
             group = 1
           ),
           color = node1Colors[5]
         )
+      }
+      if(node2Data$co[1] != "N/A"){
       plot <-
         plot + geom_line(
           data = node2Data,
           aes(
-            y = node2Data$coValue,
+            y = node2Data$co,
             x = node1Data$timestamp,
             group = 1
           ),
           color = node2Colors[5]
         )
+      }
     }
     if ("pm2_5" %in% data_selected()) {
+      if(node1Data$pm2_5[1] != "N/A"){
       plot <-
         plot + geom_line(
           data = node1Data,
           aes(
-            y = node1Data$pm2_5Value,
+            y = node1Data$pm2_5,
             x = node1Data$timestamp,
             group = 1
           ),
           color = node1Colors[6]
         )
+      }
+      if(node2Data$pm2_5[1] != "N/A"){
       plot <-
         plot + geom_line(
           data = node2Data,
           aes(
-            y = node2Data$pm2_5Value,
+            y = node2Data$pm2_5,
             x = node1Data$timestamp,
             group = 1
           ),
           color = node2Colors[6]
         )
+      }
     }
     if ("pm10" %in% data_selected()) {
-      plot <-
-        plot + geom_line(data = node1Data,
-                         aes(
-                           y = node1Data$pm10Value,
-                           x = node1Data$timestamp,
-                           group = 1
-                         ))
+      if(node1Data$pm10[1] != "N/A"){
+        plot <-
+          plot + geom_line(
+            data = node1Data,
+            aes(
+              y = node1Data$pm10,
+              x = node1Data$timestamp,
+              group = 1
+            ),
+            color = node1Colors[6]
+          )
+      }
+      if(node2Data$pm10[1] != "N/A"){
+        plot <-
+          plot + geom_line(
+            data = node2Data,
+            aes(
+              y = node2Data$pm10,
+              x = node1Data$timestamp,
+              group = 1
+            ),
+            color = node2Colors[6]
+          )
+      }
     }
-    plot <-  plot + theme_dark()
+    plot <-  plot + theme_dark() +
+      #scale_x_datetime(date_breaks = "1 hour") +
+      theme(axis.text.x = element_text(angle = 50, vjust = 1.0, hjust = 1.0))
     plot
   })
   
