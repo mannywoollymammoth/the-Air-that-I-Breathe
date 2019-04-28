@@ -100,6 +100,21 @@ updateTimeFormatForPlot <- function(time) {
   return (newTime)
 }
 
+# get a list of all the nodes with their addresses
+# TODO: allow user to filter through the nodes based on what pollutants etc they want to see
+# TODO: see if node is alive?
+getAllNodeData <- function() {
+  
+  allData <- ls.nodes()
+  df <- data.frame(
+    node_num =allData$vsn, 
+    address = allData$address
+    )
+  
+  df
+}
+
+
 # returns data for all nodes, not just one specific node
 # based on time period
 getAOTvalue <- function(period, value) {
@@ -269,9 +284,6 @@ getNodeAOTData <- function(period, node, values) {
     df$humidityValue = humid
   }
   
-  # add address of current node
-  df$address <- apply(df, 1, getAddressOfCurrNode)
-  
   # change format of time column
   df$timestamp <- apply(df, 1, updateTimeFormatForPlot)
 
@@ -304,7 +316,6 @@ listShortenerByManny <- function(orig) {
   
   new
 }
-
 
 getNodeTemps <- function() {
   # returns a df of the min, max, and average value at each node
@@ -405,7 +416,6 @@ getNodeDarkSkyData <- function(period, lat, long) {
   )
   
   df
-  
 }
 
 getNodeOpenAQData <- function() {
