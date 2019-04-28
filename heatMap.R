@@ -50,7 +50,7 @@ heatMap <- function(id) {
                status = "primary",
                width = 12,
                radioButtons(
-                 nameSpace("timeframe"),
+                 nameSpace("pollutant"),
                  inline = TRUE,
                  "Data to show:",
                  c(
