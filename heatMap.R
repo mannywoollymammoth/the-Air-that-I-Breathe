@@ -28,12 +28,12 @@ heatMap <- function(id) {
              width = 12, leafletOutput(nameSpace("heatMap"), height = 700)
            )),
     
-    
+  fluidRow(
     box(
       title = "Dark Sky or AOT",
       solidHeader = TRUE,
       status = "primary",
-      width = 12,
+      width = 6,
       radioButtons(
         nameSpace("DarkOrAOT"),
         inline = TRUE,
@@ -48,7 +48,7 @@ heatMap <- function(id) {
       title = "Leaflet Time Parameters",
       solidHeader = TRUE,
       status = "primary",
-      width = 12,
+      width = 6,
       radioButtons(
         nameSpace("timeframe"),
         inline = TRUE,
@@ -60,10 +60,10 @@ heatMap <- function(id) {
       )
     ),
     box(
-      title = "Leaflet Pollutant Parameters",
+      title = "Leaflet Aot Environment Parameters",
       solidHeader = TRUE,
       status = "primary",
-      width = 12,
+      width = 6,
       radioButtons(
         nameSpace("Environment"),
         inline = TRUE,
@@ -77,6 +77,21 @@ heatMap <- function(id) {
           "pm2_5",
           "pm10",
           "intensity",
+          "temperature"
+        ),
+        selected = c("temperature")
+      )
+    ),
+    box(
+      title = "Leaflet DarkSky Environment Parameters",
+      solidHeader = TRUE,
+      status = "primary",
+      width = 6,
+      radioButtons(
+        nameSpace("DarkEnvironment"),
+        inline = TRUE,
+        "Data to show:",
+        c(
           "temperature",
           "humidity",
           "wind speed",
@@ -87,7 +102,7 @@ heatMap <- function(id) {
         ),
         selected = c("temperature")
       )
-    )
+    ))
   )
   
   # Define server logic required to draw a histogram
@@ -97,6 +112,7 @@ heatMap <- function(id) {
 heatMapServer <- function(input, output, session) {
   reactiveValues <- reactiveValues()
   env_selected <- reactive(input$Environment)
+  darkEnv_selected <- reactive(input$DarkEnvironment)
   dataSet_selected <- reactive(input$DarkOrAOT)
   time_selected <- reactive(input$timeframe)
   reactiveValues$env_selected <- NULL
@@ -108,60 +124,56 @@ heatMapServer <- function(input, output, session) {
   getDarkSkyData <- function(period, nodeLocations) {
     avg <- list()
     vsn <- list()
-    for (row in 1:30) {
+    for (row in 1:10) {
       df <-
         getNodeDarkSkyData(period,
                            nodeLocations$latitude[row],
                            nodeLocations$longitude[row],
-                           env_selected())
+                           darkEnv_selected())
       groupByList <- rep('tag', nrow(df))
       df$groupByList <- groupByList
       
       
       
       #here we will only aggregate what ever is selected int the radio box
-      if ('temperature' == env_selected()){
+      if ('temperature' == darkEnv_selected()) {
         average = aggregate(df$temperature,
                             by = list(df$groupByList),
                             FUN = mean)
       }
-      else if('cloud cover' == env_selected()){
+      else if ('cloud cover' == darkEnv_selected()) {
         average = aggregate(df$cloudCover,
                             by = list(df$groupByList),
                             FUN = mean)
       }
-      else if('visibility' == env_selected()){
+      else if ('visibility' == darkEnv_selected()) {
         average = aggregate(df$visibility,
                             by = list(df$groupByList),
                             FUN = mean)
       }
-      else if('pressure' == env_selected()){
+      else if ('pressure' == darkEnv_selected()) {
         average = aggregate(df$pressure,
                             by = list(df$groupByList),
                             FUN = mean)
       }
       
-      else if('wind bearing' == env_selected()){
+      else if ('wind bearing' == darkEnv_selected()) {
         average = aggregate(df$windBearing,
                             by = list(df$groupByList),
                             FUN = mean)
       }
       
-      else if('wind speed' == env_selected()){
+      else if ('wind speed' == darkEnv_selected()) {
         average = aggregate(df$windSpeed,
                             by = list(df$groupByList),
                             FUN = mean)
       }
       
-      else if('humidity' == env_selected()){
+      else if ('humidity' == darkEnv_selected()) {
         average = aggregate(df$humidity,
                             by = list(df$groupByList),
                             FUN = mean)
       }
-      
-      
-      
-      
       
       avg <- append(avg, average$x)
       vsn <-  append(vsn, nodeLocations$vsn[row])
@@ -178,16 +190,18 @@ heatMapServer <- function(input, output, session) {
     reactiveValues$env_selected <- env_selected()
     
     
-    if ('DarkSky' == dataSet_selected()){
+    if ('DarkSky' == dataSet_selected()) {
       Data <- getDarkSkyData(time_selected(), nodeLocations)
     }
     else{
       Data <- getNodeTemps()
       Data <-
-           transform(Data,
-                     min = as.numeric(min),
-                     max = as.numeric(max),
-                     avg = as.numeric(avg))
+        transform(
+          Data,
+          min = as.numeric(min),
+          max = as.numeric(max),
+          avg = as.numeric(avg)
+        )
     }
     
     Data <-
@@ -204,7 +218,7 @@ heatMapServer <- function(input, output, session) {
     #print(Data)
     
     #for the node temp we need this
-    # 
+    #
     coordinates(Data) = ~ longitude + latitude
     proj4string(Data) <-
       CRS("+proj=longlat +ellps=WGS84 +datum=WGS84")
