@@ -443,7 +443,6 @@ getNodeDarkSkyData <- function(period, lat, long, values) {
   
   # drop all columns that are not included in values
   drops <- numeric()
-  print(values)
   
   if(!"temperature" %in% values){
     drops <- append(drops, "temperature")

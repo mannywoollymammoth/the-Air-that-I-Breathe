@@ -18,12 +18,23 @@ AOTMap <- function(id) {
     
     fluidRow(column( #graph column starts
       7,
-      box(
-        title = "AOT Data Graphs",
-        solidHeader = TRUE,
-        status = "primary",
-        width = 12,
-        plotOutput(nameSpace("lineGraphCurrent"))
+      fluidRow(
+        box(
+          title = "AOT Data Graphs",
+          solidHeader = TRUE,
+          status = "primary",
+          width = 12,
+          plotOutput(nameSpace("AOTLineGraph"))
+        )
+      ),
+      fluidRow(
+        box(
+          title = "Dark Sky Data Graphs",
+          solidHeader = TRUE,
+          status = "primary",
+          width = 12,
+          plotOutput(nameSpace("DarkSkyLineGraph"))
+        )
       )
     ), # graph column ends
     
@@ -32,9 +43,9 @@ AOTMap <- function(id) {
       tabBox(
         title = "Leaflet Map",
         width = 12,
-        tabPanel("Tab1", leafletOutput(nameSpace("Normal"), height = 600)),
-        tabPanel("Tab2", leafletOutput(nameSpace("StamenToner"), height = 600)),
-        tabPanel("Tab3", leafletOutput(nameSpace("NightSky"), height = 600))
+        tabPanel("Tab1", leafletOutput(nameSpace("Normal"), height = 500)),
+        tabPanel("Tab2", leafletOutput(nameSpace("StamenToner"), height = 500)),
+        tabPanel("Tab3", leafletOutput(nameSpace("NightSky"), height = 500))
       )
     ) # map column ends
     ),
@@ -268,7 +279,7 @@ AOTmapServer <- function(input, output, session) {
   
   # ====================================================== DARK SKY
   
-  darkSkyNodeDataNode1CurrentReactive <- reactive({
+  node1DarkSkyCurrentDataReactive <- reactive({
     tryCatch({
       getNodeDarkSkyData("current",
                          reactiveValues$curr1NodeLat,
@@ -280,7 +291,7 @@ AOTmapServer <- function(input, output, session) {
     })
   })
   
-  darkSkyNodeDataNode2CurrentReactive <- reactive({
+  node2DarkSkyCurrentDataReactive <- reactive({
     tryCatch({
       getNodeDarkSkyData("current",
                          reactiveValues$curr1NodeLat,
@@ -292,7 +303,7 @@ AOTmapServer <- function(input, output, session) {
     })
   })
   
-  darkSkyNodeDataNode1DayReactive <- reactive({
+  node1DarkSkyDayDataReactive <- reactive({
     tryCatch({
       getNodeDarkSkyData("day",
                          reactiveValues$curr1NodeLat,
@@ -304,7 +315,7 @@ AOTmapServer <- function(input, output, session) {
     })
   })
   
-  darkSkyNodeDataNode2DayReactive <- reactive({
+  node2DarkSkyDayDataReactive <- reactive({
     tryCatch({
       getNodeDarkSkyData("day",
                          reactiveValues$curr2NodeLat,
@@ -316,7 +327,7 @@ AOTmapServer <- function(input, output, session) {
     })
   })
   
-  darkSkyNodeDataNode1WeekReactive <- reactive({
+  node1DarkSkyWeekDataReactive <- reactive({
     tryCatch({
       getNodeDarkSkyData("week",
                          reactiveValues$curr1NodeLat,
@@ -328,7 +339,7 @@ AOTmapServer <- function(input, output, session) {
     })
   })
   
-  darkSkyNodeDataNode2WeekReactive <- reactive({
+  node2DarkSkyWeekDataReactive <- reactive({
     tryCatch({
       getNodeDarkSkyData("week",
                          reactiveValues$curr1NodeLat,
@@ -576,11 +587,11 @@ AOTmapServer <- function(input, output, session) {
     data <- NULL
     
     if (input$timeframe == "current") {
-      data <- darkSkyNodeDataNode1CurrentReactive()
+      data <- node1DarkSkyCurrentDataReactive()
     } else if (input$timeframe == "day") {
-      data <- darkSkyNodeDataNode1DayReactive()
+      data <- node1DarkSkyDayDataReactive()
     } else if (input$timeframe == "week") {
-      data <- darkSkyNodeDataNode1WeekReactive()
+      data <- node1DarkSkyWeekDataReactive()
     }
     datatable(data, options = list(pageLength = 5))
   })
@@ -591,18 +602,18 @@ AOTmapServer <- function(input, output, session) {
     data <- NULL
     
     if (input$timeframe == "current") {
-      data <- darkSkyNodeDataNode2CurrentReactive()
+      data <- node2DarkSkyCurrentDataReactive()
     } else if (input$timeframe == "day") {
-      data <- darkSkyNodeDataNode2DayReactive()
+      data <- node2DarkSkyDayDataReactive()
     } else if (input$timeframe == "week") {
-      data <- darkSkyNodeDataNode2WeekReactive()
+      data <- node2DarkSkyWeekDataReactive()
     }
     datatable(data, options = list(pageLength = 5))
   })
   
   # ============================================================ UI - Graphs
   
-  output$lineGraphCurrent <- renderPlot({
+  output$AOTLineGraph <- renderPlot({
     autoInvalidate()
     reactiveValues$data_selected <- data_selected()
     
@@ -815,4 +826,220 @@ AOTmapServer <- function(input, output, session) {
     plot
   })
   
+  output$DarkSkyLineGraph <- renderPlot({
+    autoInvalidate()
+    reactiveValues$data_selected <- ds_data_selected()
+    
+    # choose node data based on the selected value for the time period
+    if (input$timeframe == "current") {
+      node1Data <- node1DarkSkyCurrentDataReactive()
+      node2Data <- node2DarkSkyCurrentDataReactive()
+    } else if (input$timeframe == "day") {
+      node1Data <- node1DarkSkyDayDataReactive()
+      node2Data <- node2DarkSkyDayDataReactive()
+    } else if (input$timeframe == "week") {
+      node1Data <- node1DarkSkyWeekDataReactive()
+      node2Data <- node2DarkSkyWeekDataReactive()
+    }
+    
+    node1Colors <- brewer.pal(n = 6, name = 'OrRd')
+    node2Colors <- brewer.pal(n = 6, name = 'BuPu')
+    
+    plot <- ggplot() + ylim(-10, 20)
+    
+    if ("temperature" %in% ds_data_selected()) {
+      if(node1Data$temperature[1] != "N/A"){
+        plot <-
+          plot + geom_line(
+            data = node1Data,
+            aes(
+              y = node1Data$temperature,
+              x = node1Data$time,
+              group = 1
+            ),
+            color = node1Colors[1]
+          )
+      }
+      if(node2Data$temperature[1] != "N/A"){
+        plot <-
+          plot + geom_line(
+            data = node2Data,
+            aes(
+              y = node2Data$temperature,
+              x = node2Data$time,
+              group = 1
+            ),
+            color = node2Colors[1]
+          )
+      }
+    }
+    
+    if ("humidity" %in% ds_data_selected()) {
+      if(node1Data$humidity[1] != "N/A"){
+        plot <-
+          plot + geom_line(
+            data = node1Data,
+            aes(
+              y = node1Data$humidity,
+              x = node1Data$time,
+              group = 1
+            ),
+            color = node1Colors[1]
+          )
+      }
+      if(node2Data$humidity[1] != "N/A"){
+        plot <-
+          plot + geom_line(
+            data = node2Data,
+            aes(
+              y = node2Data$humidity,
+              x = node2Data$time,
+              group = 1
+            ),
+            color = node2Colors[1]
+          )
+      }
+    }
+    
+    if ("wind speed" %in% ds_data_selected()) {
+      if(node1Data$windSpeed[1] != "N/A"){
+        plot <-
+          plot + geom_line(
+            data = node1Data,
+            aes(
+              y = node1Data$windSpeed,
+              x = node1Data$time,
+              group = 1
+            ),
+            color = node1Colors[1]
+          )
+      }
+      if(node2Data$windSpeed[1] != "N/A"){
+        plot <-
+          plot + geom_line(
+            data = node2Data,
+            aes(
+              y = node2Data$windSpeed,
+              x = node2Data$time,
+              group = 1
+            ),
+            color = node2Colors[1]
+          )
+      }
+    }
+    
+    if ("wind bearing" %in% ds_data_selected()) {
+      if(node1Data$windBearing[1] != "N/A"){
+        plot <-
+          plot + geom_line(
+            data = node1Data,
+            aes(
+              y = node1Data$windBearing,
+              x = node1Data$time,
+              group = 1
+            ),
+            color = node1Colors[1]
+          )
+      }
+      if(node2Data$windBearing[1] != "N/A"){
+        plot <-
+          plot + geom_line(
+            data = node2Data,
+            aes(
+              y = node2Data$windBearing,
+              x = node2Data$time,
+              group = 1
+            ),
+            color = node2Colors[1]
+          )
+      }
+    }
+    
+    if ("cloud cover" %in% ds_data_selected()) {
+      if(node1Data$cloudCover[1] != "N/A"){
+        plot <-
+          plot + geom_line(
+            data = node1Data,
+            aes(
+              y = node1Data$cloudCover,
+              x = node1Data$time,
+              group = 1
+            ),
+            color = node1Colors[1]
+          )
+      }
+      if(node2Data$cloudCover[1] != "N/A"){
+        plot <-
+          plot + geom_line(
+            data = node2Data,
+            aes(
+              y = node2Data$cloudCover,
+              x = node2Data$time,
+              group = 1
+            ),
+            color = node2Colors[1]
+          )
+      }
+    }
+    
+    if ("visibility" %in% ds_data_selected()) {
+      if(node1Data$visibility[1] != "N/A"){
+        plot <-
+          plot + geom_line(
+            data = node1Data,
+            aes(
+              y = node1Data$visibility,
+              x = node1Data$time,
+              group = 1
+            ),
+            color = node1Colors[1]
+          )
+      }
+      if(node2Data$visibility[1] != "N/A"){
+        plot <-
+          plot + geom_line(
+            data = node2Data,
+            aes(
+              y = node2Data$visibility,
+              x = node2Data$time,
+              group = 1
+            ),
+            color = node2Colors[1]
+          )
+      }
+    }
+    
+    if ("pressure" %in% ds_data_selected()) {
+      if(node1Data$pressure[1] != "N/A"){
+        plot <-
+          plot + geom_line(
+            data = node1Data,
+            aes(
+              y = node1Data$pressure,
+              x = node1Data$time,
+              group = 1
+            ),
+            color = node1Colors[1]
+          )
+      }
+      if(node2Data$pressure[1] != "N/A"){
+        plot <-
+          plot + geom_line(
+            data = node2Data,
+            aes(
+              y = node2Data$pressure,
+              x = node2Data$time,
+              group = 1
+            ),
+            color = node2Colors[1]
+          )
+      }
+    }
+    
+    plot <-  plot + theme_dark() +
+      #scale_x_datetime(date_breaks = "1 hour") +
+      theme(axis.text.x = element_text(angle = 50, vjust = 1.0, hjust = 1.0))
+    plot
+    
+  })
 }
