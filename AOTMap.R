@@ -130,6 +130,7 @@ AOTMap <- function(id) {
              ), # end of options
       column(5, # Column for Node 1 data
         tabBox(
+          width= 12,
           title = "Node 1 Data",
           id = "tabset2",
           height = 550,

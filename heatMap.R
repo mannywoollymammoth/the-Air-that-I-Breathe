@@ -22,15 +22,15 @@ source('DataModeler.R')
 
 heatMap <- function(id) {
   nameSpace <- NS(id)
-  fluidRow(column(12,
-                  box(leafletOutput(
-                    nameSpace("heatMap"), height = 700
-                  ))),
+  fluidRow(column(8,
+                  box(
+                    width = 12, leafletOutput(nameSpace("heatMap"), height = 700)
+                  )),
            
            column(
-             12,
+             4,
              box(
-               title = "Leaflet Map Parameters",
+               title = "Leaflet Time Parameters",
                solidHeader = TRUE,
                status = "primary",
                width = 12,
@@ -43,6 +43,30 @@ heatMap <- function(id) {
                    "week"),
                  selected = c("current")
                )
+             ),
+             box(
+               title = "Leaflet Pollutant Parameters",
+               solidHeader = TRUE,
+               status = "primary",
+               width = 12,
+               radioButtons(
+                 nameSpace("timeframe"),
+                 inline = TRUE,
+                 "Data to show:",
+                 c(
+                   "so2",
+                   "h2s",
+                   "o3",
+                   "no2",
+                   "co",
+                   "pm2_5",
+                   "pm10",
+                   "temperature",
+                   "intensity",
+                   "humidity"
+                 ),
+                 selected = c("current")
+               )
              )
            ))
   
@@ -51,58 +75,12 @@ heatMap <- function(id) {
 
 
 heatMapServer <- function(input, output, session) {
-  getNodeGeoPoints <- function() {
-    latitude = c()
-    longitude = c()
-    vsn = c()
-    counter <- 1
-    
-    #query data from the AOT devices
-    nodeLocations <- data.frame(ls.nodes(filters = list()))
-    nodeLatLong <- nodeLocations %>% select(location.geometry)
-    coordinates <- nodeLatLong$location.geometry$coordinates
-    nodeID <- nodeLocations %>% select(vsn)
-    nodeID <- as.character(nodeID$vsn)
-    
-    #remove any invalid coordinates from the list
-    for (point in coordinates) {
-      if (point[1] != 0) {
-        longitude <-
-          append(longitude, point[1], after = length(longitude))
-        latitude <-
-          append(latitude, point[2], after = length(latitude))
-        vsn <-
-          append(vsn, nodeID[counter], after = length(vsn))
-      }
-      counter <- counter + 1
-    }
-    
-    return (data.frame(longitude, latitude, vsn))
-  }
   
-  
-  AverageTemp <- function(x) {
-    tryCatch({
-      obs <-
-        ls.observations(filters = list(node = x[3], sensor = 'metsense.bmp180.temperature'))
-      average = aggregate(obs$value, by = list(obs$node_vsn), FUN = mean)
-      average$longitude <- obs$location.geometry$coordinates[[1]][1]
-      average$latitude <- obs$location.geometry$coordinates[[1]][2]
-      #print(average)
-      return(average)
-      
-    }, error = function(e) {
-      
-    })
-  }
   
   output$heatMap <- renderLeaflet({
     Data <- getNodeTemps()
     
     nodeLocations <- getNodeGeoPoints()
-    #Data$longitude <- nodeLocations$longitude
-    #Data$latitude <- nodeLocations$latitude
-    #print(Data)
     Data <-
       merge(
         x = Data,
@@ -110,8 +88,7 @@ heatMapServer <- function(input, output, session) {
         by = "vsn",
         all.x = TRUE
       )
-    #Data <- apply(nodeLocations, 1, AverageTemp)
-    #Data <- do.call(rbind, Data)
+
     
     Data <- na.omit(Data)
     #print(Data)
@@ -146,7 +123,7 @@ heatMapServer <- function(input, output, session) {
     leaflet(data = leafmap) %>%
       addTiles() %>% setView(lng = -87.647998,
                              lat = 41.870,
-                             zoom = 12) %>%
+                             zoom = 11) %>%
       addPolygons(
         fillColor = ~ pal(min),
         fillOpacity = 0.8,
