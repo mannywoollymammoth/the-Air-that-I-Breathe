@@ -120,7 +120,6 @@ heatMapServer <- function(input, output, session) {
       
       
       #here we will only aggregate what ever is selected int the radio box
-      
       if ('temperature' == env_selected()){
         average = aggregate(df$temperature,
                             by = list(df$groupByList),
@@ -131,6 +130,36 @@ heatMapServer <- function(input, output, session) {
                             by = list(df$groupByList),
                             FUN = mean)
       }
+      else if('visibility' == env_selected()){
+        average = aggregate(df$visibility,
+                            by = list(df$groupByList),
+                            FUN = mean)
+      }
+      else if('pressure' == env_selected()){
+        average = aggregate(df$pressure,
+                            by = list(df$groupByList),
+                            FUN = mean)
+      }
+      
+      else if('wind bearing' == env_selected()){
+        average = aggregate(df$windBearing,
+                            by = list(df$groupByList),
+                            FUN = mean)
+      }
+      
+      else if('wind speed' == env_selected()){
+        average = aggregate(df$windSpeed,
+                            by = list(df$groupByList),
+                            FUN = mean)
+      }
+      
+      else if('humidity' == env_selected()){
+        average = aggregate(df$humidity,
+                            by = list(df$groupByList),
+                            FUN = mean)
+      }
+      
+      
       
       
       
