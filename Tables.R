@@ -13,7 +13,7 @@ library(RColorBrewer)
 source('DataModeler.R')
 
 
-AOTMap <- function(id) {
+Tables <- function(id) {
   nameSpace <- NS(id)
   fluidRow( # This is the main fluid row
     
@@ -164,7 +164,7 @@ AOTMap <- function(id) {
              ), 
       column(1,
                box(
-                 title = "Timeframe for Data Tables",
+                 title = "Node List",
                  solidHeader = TRUE,
                  status = "primary",
                  width = 12,
@@ -288,7 +288,7 @@ humList <- function(nodeLocations){
 
 # ============================================================ Server starts here
 
-AOTmapServer <- function(input, output, session) {
+TablesServer <- function(input, output, session) {
   dataSelectedReactive <- reactive(input$data_selected)
   ds_dataSelectedReactive <- reactive(input$ds_data_selected)
   node_filterReactive <- reactive(input$nodeFilter)
@@ -477,6 +477,17 @@ AOTmapServer <- function(input, output, session) {
     # timer runs out...
     autoInvalidate()
   })
+  
+  observe({
+    rows <- input$AOTAllNodesTable_rows_selected
+    
+    if(length(rows) > 2) {
+      rows = rows[-1]
+    }
+    
+    print(rows)
+  })
+  
   
   updateNodesWhenClicked <- function(currNodeId, mapType) {
     coordinates <- getNodeGeoPoints()
@@ -1079,7 +1090,7 @@ AOTmapServer <- function(input, output, session) {
     node1Colors <- brewer.pal(n = 6, name = 'OrRd')
     node2Colors <- brewer.pal(n = 6, name = 'BuPu')
     
-    plot <- ggplot() + ylim(-10, 20)
+    plot <- ggplot()
     
     if ("so2" %in% data_selected()) {
       if(node1Data$so2[1] != "N/A"){
@@ -1332,7 +1343,7 @@ AOTmapServer <- function(input, output, session) {
     node1Colors <- brewer.pal(n = 6, name = 'OrRd')
     node2Colors <- brewer.pal(n = 6, name = 'BuPu')
     
-    plot <- ggplot() + ylim(-10, 20)
+    plot <- ggplot()
     
     if ("temperature" %in% ds_data_selected()) {
       if(node1Data$temperature[1] != "N/A"){
