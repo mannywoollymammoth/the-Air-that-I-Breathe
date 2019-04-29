@@ -181,7 +181,28 @@ AOTMap <- function(id) {
              )
        
   ), # end of column for node 1 data
-  column(5
+  column(5,box(
+    title = "Node Filter",
+    solidHeader = TRUE,
+    status = "primary",
+    width = 12,
+    radioButtons(
+      nameSpace("nodeFilter"),
+      inline = TRUE,
+      "Data to show:",
+      c("so2",
+        "h2s",
+        "o3",
+        "no2",
+        "co",
+        "pm2_5",
+        "pm10",
+        "temperature",
+        "intensity",
+        "humidity"),
+      selected = c("so2")
+    )
+  )
   ) # end of column for node 1 data 
   ) # this is where the fluid row for the two node tables ends
   )
