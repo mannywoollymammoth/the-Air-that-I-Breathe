@@ -64,6 +64,30 @@ AOTMap <- function(id) {
             dataTableOutput(nameSpace("darkSkyTableNode1"), width = "100%")
           )
         )
+      ), # Column for Node 2 data
+      tabBox(
+        title = "Node 2 Data",
+        id = "tabset3",
+        width = 12,
+        height = 450,
+        tabPanel(
+          "AOT Data",
+          box(
+            solidHeader = TRUE,
+            status = "primary",
+            width = 12,
+            dataTableOutput(nameSpace("AOTTableNode2"), width = "100%")
+          )
+        ),
+        tabPanel(
+          "Dark Sky Data",
+          box(
+            solidHeader = TRUE,
+            status = "primary",
+            width = 12,
+            dataTableOutput(nameSpace("darkSkyTableNode2"), width = "100%")
+          )
+        )
       )
       
     ) # map column ends
@@ -157,31 +181,7 @@ AOTMap <- function(id) {
              )
        
   ), # end of column for node 1 data
-  column(5, # Column for Node 2 data
-    tabBox(
-      title = "Node 2 Data",
-      id = "tabset3",
-      width = 12,
-      height = 450,
-      tabPanel(
-        "AOT Data",
-        box(
-          solidHeader = TRUE,
-          status = "primary",
-          width = 12,
-          dataTableOutput(nameSpace("AOTTableNode2"), width = "100%")
-        )
-      ),
-      tabPanel(
-        "Dark Sky Data",
-        box(
-          solidHeader = TRUE,
-          status = "primary",
-          width = 12,
-          dataTableOutput(nameSpace("darkSkyTableNode2"), width = "100%")
-        )
-      )
-    )
+  column(5
   ) # end of column for node 1 data 
   ) # this is where the fluid row for the two node tables ends
   )
