@@ -1,6 +1,7 @@
 library(AotClient)
 library('tidyverse')
 library(darksky)
+library(dplyr)
 
 all_node_data <- ls.nodes()
 
@@ -376,6 +377,76 @@ getNodeTemps <- function() {
   }
   return(df)
 }
+
+
+#this is for the heat map but to reduce the AOT node Calls
+getNodeTemps2 <- function(tempList) {
+  # returns a df of the min, max, and average value at each node
+  
+  # empty dataframe
+  df <-
+    setNames(data.frame(matrix(ncol = 4, nrow = 0)), c("vsn", "min", "max", "avg"))
+  time = getTimeFromToday("day")
+  time = strftime(time, tz = "UTC", format = "lt:%Y-%m-%dT%H:%M:%S")
+  vsns <- all_node_data$vsn
+  
+  for (num in tempList$vsn) {
+    tryCatch({
+      #TODO: I just chose a temp sensor that seemed more accurate here for more values... its still massively
+      # off for some of them so we will have to figure out a better sensor to use? Or use all of them..?? idk
+      vals = ls.observations(filters = list(
+        sensor = "chemsense.at0.temperature",
+        #sensor = "metsense.tmp112.temperature",
+        node = num,
+        timestamp = time
+      ))
+    
+      min <- min(vals$value)
+      max <- max(vals$value)
+      avg <- ave(vals$value)[1]
+      
+      # add each new row
+      df[nrow(df) + 1,] <- c(num, min, max, avg)
+    },
+    error = function(cond) {
+    })
+  }
+  return(df)
+}
+
+getNodeData2 <- function(nodeList, sensor, time) {
+  # returns a df of the min, max, and average value at each node
+  
+  # empty dataframe
+  df <-
+    setNames(data.frame(matrix(ncol = 4, nrow = 0)), c("vsn", "min", "max", "avg"))
+  time = getTimeFromToday(time)
+  time = strftime(time, tz = "UTC", format = "lt:%Y-%m-%dT%H:%M:%S")
+  vsns <- all_node_data$vsn
+  
+  for (num in nodeList$vsn) {
+    tryCatch({
+      #TODO: I just chose a temp sensor that seemed more accurate here for more values... its still massively
+      # off for some of them so we will have to figure out a better sensor to use? Or use all of them..?? idk
+      vals = ls.observations(filters = list(
+        sensor = sensor,
+        node = num,
+        timestamp = time
+      ))
+      
+      min <- min(vals$value)
+      max <- max(vals$value)
+      avg <- ave(vals$value)[1]
+      
+      # add each new row
+      df[nrow(df) + 1,] <- c(num, min, max, avg)
+    },
+    error = function(cond) {
+    })
+  }
+  return(df)
+}
+
 
 getNodeDarkSkyData <- function(period, lat, long, values) {
   # get data based on the time period requested and the lat/long of the current node
