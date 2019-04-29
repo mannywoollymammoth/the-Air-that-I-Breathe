@@ -153,6 +153,8 @@ heatMapServer <- function(input, output, session) {
   #it should return a dataframe complete with the data that we need
   getDarkSkyData <- function(period, nodeLocations) {
     avg <- list()
+    min <- list()
+    max <- list()
     vsn <- list()
     for (row in 1:10) {
       df <-
@@ -170,75 +172,123 @@ heatMapServer <- function(input, output, session) {
         average = aggregate(df$temperature,
                             by = list(df$groupByList),
                             FUN = mean)
+        minimum = aggregate(df$temperature,
+                            by = list(df$groupByList),
+                            FUN = min)
+        
+        maximum = aggregate(df$temperature,
+                            by = list(df$groupByList),
+                            FUN = max)
+        
       }
       else if ('cloud cover' == darkEnv_selected()) {
         average = aggregate(df$cloudCover,
                             by = list(df$groupByList),
                             FUN = mean)
+        minimum = aggregate(df$cloudCover,
+                            by = list(df$groupByList),
+                            FUN = min)
+        maximum = aggregate(df$cloudCover,
+                            by = list(df$groupByList),
+                            FUN = max)
       }
       else if ('visibility' == darkEnv_selected()) {
         average = aggregate(df$visibility,
                             by = list(df$groupByList),
                             FUN = mean)
+        minimum = aggregate(df$visibility,
+                            by = list(df$groupByList),
+                            FUN = min)
+        maximum = aggregate(df$visibility,
+                            by = list(df$groupByList),
+                            FUN = max)
       }
       else if ('pressure' == darkEnv_selected()) {
         average = aggregate(df$pressure,
                             by = list(df$groupByList),
                             FUN = mean)
+        minimum = aggregate(df$pressure,
+                            by = list(df$groupByList),
+                            FUN = min)
+        maximum = aggregate(df$pressure,
+                            by = list(df$groupByList),
+                            FUN = max)
       }
       
       else if ('wind bearing' == darkEnv_selected()) {
         average = aggregate(df$windBearing,
                             by = list(df$groupByList),
                             FUN = mean)
+        minimum = aggregate(df$windBearing,
+                            by = list(df$groupByList),
+                            FUN = min)
+        maximum = aggregate(df$windBearing,
+                            by = list(df$groupByList),
+                            FUN = max)
       }
       
       else if ('wind speed' == darkEnv_selected()) {
         average = aggregate(df$windSpeed,
                             by = list(df$groupByList),
                             FUN = mean)
+        minimum = aggregate(df$windSpeed,
+                            by = list(df$groupByList),
+                            FUN = min)
+        maximum = aggregate(df$windSpeed,
+                            by = list(df$groupByList),
+                            FUN = max)
       }
       
       else if ('humidity' == darkEnv_selected()) {
         average = aggregate(df$humidity,
                             by = list(df$groupByList),
                             FUN = mean)
+        minimum = aggregate(df$humidity,
+                            by = list(df$groupByList),
+                            FUN = min)
+        maximum = aggregate(df$humidity,
+                            by = list(df$groupByList),
+                            FUN = max)
       }
       
       avg <- append(avg, average$x)
+      min <- append(min, minimum$x)
+      max <- append(max, maximum$x)
       vsn <-  append(vsn, nodeLocations$vsn[row])
     }
     avg <- do.call(rbind, avg)
+    min <- do.call(rbind, min)
+    max <- do.call(rbind, max)
     vsn <- do.call(rbind, vsn)
     
-    return(data.frame(vsn, avg))
+    return(data.frame(vsn, avg, min, max))
   }
   
   getAOTData <- function()
   {
     if('co' == env_selected()){
-      Data <- getNodeData2(coList, 'chemsense.co.concentration')
+      Data <- getNodeData2(coList, 'chemsense.co.concentration', time_selected())
     }
     else if('h2s' == env_selected()){
-      Data <- getNodeData2(h2sList, 'chemsense.h2s.concentration')
+      Data <- getNodeData2(h2sList, 'chemsense.h2s.concentration',time_selected())
     }
     else if('o3' == env_selected()){
-      Data <- getNodeData2(o3List, 'chemsense.o3.concentration')
+      Data <- getNodeData2(o3List, 'chemsense.o3.concentration',time_selected())
     }
     else if('so2' == env_selected()){
-      Data <- getNodeData2(so2List, 'chemsense.so2.concentration')
+      Data <- getNodeData2(so2List, 'chemsense.so2.concentration',time_selected())
     }
     else if('intensity' == env_selected()){
-      Data <- getNodeData2(so2List, 'lightsense.tsl250rd.intensity')
+      Data <- getNodeData2(so2List, 'lightsense.tsl250rd.intensity',time_selected())
     }
     else if('humidity' == env_selected()){
-      Data <- getNodeData2(humList, 'metsense.htu21d.humidity')
+      Data <- getNodeData2(humList, 'metsense.htu21d.humidity',time_selected())
     }
     else if('pm2_5' == env_selected()){
-      Data <- getNodeData2(pm2_5List, 'alphasense.opc_n2.pm2_5')
+      Data <- getNodeData2(pm2_5List, 'alphasense.opc_n2.pm2_5',time_selected())
     }
     else if('pm10' == env_selected()){
-      Data <- getNodeData2(pm10List, 'alphasense.opc_n2.pm10')
+      Data <- getNodeData2(pm10List, 'alphasense.opc_n2.pm10',time_selected())
     }
     else if('temperature' == env_selected()){
       Data <- getNodeTemps2(tempList)
@@ -266,17 +316,6 @@ heatMapServer <- function(input, output, session) {
     }
     else{
       
-      #print(DataTest)
-      #Data <- getNodeTemps2(tempList)
-      
-      
-      # Data <-
-      #   transform(
-      #     Data,
-      #     min = as.numeric(min),
-      #     max = as.numeric(max),
-      #     avg = as.numeric(avg)
-      #   )
       Data <- getAOTData()
       #print(Data)
     }

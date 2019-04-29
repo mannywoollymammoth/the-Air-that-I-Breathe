@@ -414,13 +414,13 @@ getNodeTemps2 <- function(tempList) {
   return(df)
 }
 
-getNodeData2 <- function(nodeList, sensor) {
+getNodeData2 <- function(nodeList, sensor, time) {
   # returns a df of the min, max, and average value at each node
   
   # empty dataframe
   df <-
     setNames(data.frame(matrix(ncol = 4, nrow = 0)), c("vsn", "min", "max", "avg"))
-  time = getTimeFromToday("day")
+  time = getTimeFromToday(time)
   time = strftime(time, tz = "UTC", format = "lt:%Y-%m-%dT%H:%M:%S")
   vsns <- all_node_data$vsn
   
