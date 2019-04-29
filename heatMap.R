@@ -94,6 +94,7 @@ heatMap <- function(id) {
           "pm2_5",
           "pm10",
           "intensity",
+          "humidity",
           "temperature"
         ),
         selected = c("so2")
@@ -229,6 +230,15 @@ heatMapServer <- function(input, output, session) {
     }
     else if('intensity' == env_selected()){
       Data <- getNodeData2(so2List, 'lightsense.tsl250rd.intensity')
+    }
+    else if('humidity' == env_selected()){
+      Data <- getNodeData2(humList, 'metsense.htu21d.humidity')
+    }
+    else if('pm2_5' == env_selected()){
+      Data <- getNodeData2(pm2_5List, 'alphasense.opc_n2.pm2_5')
+    }
+    else if('pm10' == env_selected()){
+      Data <- getNodeData2(pm10List, 'alphasense.opc_n2.pm10')
     }
     else if('temperature' == env_selected()){
       Data <- getNodeTemps2(tempList)
