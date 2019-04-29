@@ -17,7 +17,7 @@ library(maps)
 
 
 source('DataModeler.R')
-
+source('AOTMap.R')
 
 
 heatMap <- function(id) {
@@ -27,6 +27,23 @@ heatMap <- function(id) {
            box(
              width = 12, leafletOutput(nameSpace("heatMap"), height = 700)
            )),
+    column(3,
+           box(
+             title = "Data Bounds",
+             solidHeader = TRUE,
+             status = "primary",
+             width = 6,
+             radioButtons(
+               nameSpace("dataBounds"),
+               inline = TRUE,
+               "Data to show:",
+               c("min",
+                 "max",
+                 "avg"),
+               selected = c("avg")
+             )
+           )
+    ),
     
   fluidRow(
     box(
@@ -118,7 +135,17 @@ heatMapServer <- function(input, output, session) {
   time_selected <- reactive(input$timeframe)
   reactiveValues$env_selected <- NULL
   
-  
+  nodeLocations <- read_csv('nodeLocations.csv')
+  coList <- coList(nodeLocations)
+  no2List <- no2List(nodeLocations)
+  h2sList <- h2sList(nodeLocations)
+  o3List <- o3List(nodeLocations)
+  so2List <- so2List(nodeLocations)
+  pm10List <- pm10List(nodeLocations)
+  pm2_5List <- pm2_5List(nodeLocations)
+  lightList <- lightList(nodeLocations)
+  tempList <- tempList(nodeLocations)
+  humList <- humList(nodeLocations)
   
   #this function will go through the list of node locations and query dark sky
   #it should return a dataframe complete with the data that we need
@@ -243,7 +270,7 @@ heatMapServer <- function(input, output, session) {
       merge(chicago.map.hoods, dataWithTag, by = 'area_num_1')
     pal <- colorNumeric("YlOrRd", NULL, n = 13)
     
-    leaflet(data = leafmap) %>%
+    map <- leaflet(data = leafmap) %>%
       addTiles() %>% setView(lng = -87.647998,
                              lat = 41.870,
                              zoom = 11) %>%
