@@ -346,7 +346,7 @@ AOTmapServer <- function(input, output, session) {
   
   node2AOTCurrentDataReactive <- reactive({
     tryCatch({
-      getNodeAOTData("current", reactiveValues$firstNode,
+      getNodeAOTData("current", reactiveValues$secondNode,
                      reactiveValues$data_selected)
     },
     error = function(cond) {
