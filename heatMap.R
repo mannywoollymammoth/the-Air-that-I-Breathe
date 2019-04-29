@@ -109,6 +109,7 @@ heatMap <- function(id) {
 }
 
 
+
 heatMapServer <- function(input, output, session) {
   reactiveValues <- reactiveValues()
   env_selected <- reactive(input$Environment)
