@@ -96,7 +96,7 @@ heatMap <- function(id) {
           "intensity",
           "temperature"
         ),
-        selected = c("temperature")
+        selected = c("so2")
       )
     ),
     box(
@@ -213,6 +213,38 @@ heatMapServer <- function(input, output, session) {
     return(data.frame(vsn, avg))
   }
   
+  getAOTData <- function()
+  {
+    if('co' == env_selected()){
+      Data <- getNodeData2(coList, 'chemsense.co.concentration')
+    }
+    else if('h2s' == env_selected()){
+      Data <- getNodeData2(h2sList, 'chemsense.h2s.concentration')
+    }
+    else if('o3' == env_selected()){
+      Data <- getNodeData2(o3List, 'chemsense.o3.concentration')
+    }
+    else if('so2' == env_selected()){
+      Data <- getNodeData2(so2List, 'chemsense.so2.concentration')
+    }
+    else if('intensity' == env_selected()){
+      Data <- getNodeData2(so2List, 'lightsense.tsl250rd.intensity')
+    }
+    else if('temperature' == env_selected()){
+      Data <- getNodeTemps2(tempList)
+      print(Data)
+    }
+    
+    Data <-
+      transform(
+        Data,
+        min = as.numeric(min),
+        max = as.numeric(max),
+        avg = as.numeric(avg)
+      )
+    return(Data)
+  }
+  
   
   output$heatMap <- renderLeaflet({
     nodeLocations <- read_csv('nodeLocations.csv')
@@ -223,15 +255,20 @@ heatMapServer <- function(input, output, session) {
       Data <- getDarkSkyData(time_selected(), nodeLocations)
     }
     else{
-      Data <- getNodeTemps2(tempList)
-      Data <-
-        transform(
-          Data,
-          min = as.numeric(min),
-          max = as.numeric(max),
-          avg = as.numeric(avg)
-        )
-      print(Data)
+      
+      #print(DataTest)
+      #Data <- getNodeTemps2(tempList)
+      
+      
+      # Data <-
+      #   transform(
+      #     Data,
+      #     min = as.numeric(min),
+      #     max = as.numeric(max),
+      #     avg = as.numeric(avg)
+      #   )
+      Data <- getAOTData()
+      #print(Data)
     }
     
     Data <-
