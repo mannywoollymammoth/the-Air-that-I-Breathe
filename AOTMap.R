@@ -1089,9 +1089,10 @@ AOTmapServer <- function(input, output, session) {
           aes(
             y = node1Data$so2,
             x = node1Data$timestamp,
-            group = 1
+            group = 1,
+            color = "Node1So2"
           ),
-          color = node1Colors[1],
+          #color = node1Colors[1],
           size = 2
         ) + ylim(-15,20)
       }
@@ -1102,9 +1103,9 @@ AOTmapServer <- function(input, output, session) {
           aes(
             y = node2Data$so2,
             x = node1Data$timestamp,
-            group = 1
+            group = 1,
+            color = "Node2So2"
           ),
-          color = node2Colors[1],
           size = 2
         )
       }
@@ -1117,9 +1118,10 @@ AOTmapServer <- function(input, output, session) {
           aes(
             y = node1Data$h2s,
             x = node1Data$timestamp,
-            group = 1
+            group = 1,
+            color = "Node1h2s"
           ),
-          color = node1Colors[2],
+          #color = node1Colors[2],
           size = 2
         )
       }
@@ -1130,9 +1132,10 @@ AOTmapServer <- function(input, output, session) {
           aes(
             y = node2Data$h2s,
             x = node1Data$timestamp,
-            group = 1
+            group = 1,
+            color = "Node2h2s"
           ),
-          color = node2Colors[2],
+          #color = node2Colors[2],
           size = 2
         )
       }
@@ -1304,9 +1307,11 @@ AOTmapServer <- function(input, output, session) {
             size = 2
           )+ ylim(-10, 120)
       }
+      
     }
     
-    
+    plot <- plot  + scale_color_manual(name="Nodes", values=c("Node1So2"=node1Colors[1],"Node2So2"=node2Colors[1],
+                                                              "Node1h2s"=node1Colors[2],"Node2h2s"=node2Colors[2]))
     plot <-  plot + theme_dark() +
       #scale_x_datetime(date_breaks = "1 hour") +
       theme(axis.text.x = element_text(angle = 50, vjust = 1.0, hjust = 1.0))
