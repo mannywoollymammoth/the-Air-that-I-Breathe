@@ -619,17 +619,6 @@ AOTmapServer <- function(input, output, session) {
     #map %>% addMarkers(lng = coordinates$longitude, lat = coordinates$latitude)
     
     
-    
-    # map %>% addCircleMarkers(
-    #   lng = coordinates$longitude,
-    #   lat = coordinates$latitude,
-    #   radius = 4,
-    #   color = "blue",
-    #   fillOpacity = 1,
-    #   popup = coordinates$vsn,
-    #   layerId = coordinates$vsn
-    # )
-    
     if ("so2" == node_filterReactive()){
       map %>% addCircleMarkers(
         lng = so2List$longitude,
