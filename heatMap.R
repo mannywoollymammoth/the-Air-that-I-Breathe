@@ -134,6 +134,7 @@ heatMapServer <- function(input, output, session) {
   dataSet_selected <- reactive(input$DarkOrAOT)
   time_selected <- reactive(input$timeframe)
   reactiveValues$env_selected <- NULL
+  dataBounds_selected <- reactive(input$dataBounds)
   
   nodeLocations <- read_csv('nodeLocations.csv')
   coList <- coList(nodeLocations)
@@ -222,7 +223,7 @@ heatMapServer <- function(input, output, session) {
       Data <- getDarkSkyData(time_selected(), nodeLocations)
     }
     else{
-      Data <- getNodeTemps()
+      Data <- getNodeTemps2(tempList)
       Data <-
         transform(
           Data,
@@ -230,6 +231,7 @@ heatMapServer <- function(input, output, session) {
           max = as.numeric(max),
           avg = as.numeric(avg)
         )
+      print(Data)
     }
     
     Data <-
@@ -273,19 +275,53 @@ heatMapServer <- function(input, output, session) {
     map <- leaflet(data = leafmap) %>%
       addTiles() %>% setView(lng = -87.647998,
                              lat = 41.870,
-                             zoom = 11) %>%
-      addPolygons(
+                             zoom = 11)
+      
+    
+    if ('avg' == dataBounds_selected()){
+      map <- map %>% addPolygons(
         fillColor = ~ pal(avg),
         fillOpacity = 0.8,
         color = "#BDBDC3",
         weight = 1
       ) %>%
-      addLegend(
-        "bottomright",
-        pal = pal,
-        values = ~ avg,
-        opacity = 1
-      )
+        addLegend(
+          "bottomright",
+          pal = pal,
+          values = ~ avg,
+          opacity = 1
+        )
+    }
+    
+    else if ('min' == dataBounds_selected()){
+      map <- map %>% addPolygons(
+        fillColor = ~ pal(min),
+        fillOpacity = 0.8,
+        color = "#BDBDC3",
+        weight = 1
+      ) %>%
+        addLegend(
+          "bottomright",
+          pal = pal,
+          values = ~ min,
+          opacity = 1
+        )
+    }
+    
+    else if ('max' == dataBounds_selected()){
+      map <- map %>% addPolygons(
+        fillColor = ~ pal(max),
+        fillOpacity = 0.8,
+        color = "#BDBDC3",
+        weight = 1
+      ) %>%
+        addLegend(
+          "bottomright",
+          pal = pal,
+          values = ~ max,
+          opacity = 1
+        )
+    }
     
   })
   
