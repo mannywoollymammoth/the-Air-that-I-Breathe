@@ -42,7 +42,6 @@ ui <- dashboardPage(
             AOTMap(id = "AOTMap")),
     tabItem(tabName = "AOTTable",
             AOTTable(id = "AOTTable"))
-    
   )),
   
   body <- dashboardBody(useShinyjs(),

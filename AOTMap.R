@@ -1099,8 +1099,9 @@ AOTmapServer <- function(input, output, session) {
             x = node1Data$timestamp,
             group = 1
           ),
-          color = node1Colors[1]
-        )
+          color = node1Colors[1],
+          size = 2
+        ) + ylim(-15,20)
       }
       if(node2Data$so2[1] != "N/A"){
       plot <-
@@ -1111,7 +1112,8 @@ AOTmapServer <- function(input, output, session) {
             x = node1Data$timestamp,
             group = 1
           ),
-          color = node2Colors[1]
+          color = node2Colors[1],
+          size = 2
         )
       }
     }
@@ -1125,7 +1127,8 @@ AOTmapServer <- function(input, output, session) {
             x = node1Data$timestamp,
             group = 1
           ),
-          color = node1Colors[2]
+          color = node1Colors[2],
+          size = 2
         )
       }
       if(node2Data$h2s[1] != "N/A"){
@@ -1137,7 +1140,8 @@ AOTmapServer <- function(input, output, session) {
             x = node1Data$timestamp,
             group = 1
           ),
-          color = node2Colors[2]
+          color = node2Colors[2],
+          size = 2
         )
       }
     }
@@ -1151,7 +1155,8 @@ AOTmapServer <- function(input, output, session) {
             x = node1Data$timestamp,
             group = 1
           ),
-          color = node1Colors[3]
+          color = node1Colors[3],
+          size = 2
         )
       }
       if(node2Data$o3[1] != "N/A"){
@@ -1163,7 +1168,8 @@ AOTmapServer <- function(input, output, session) {
             x = node1Data$timestamp,
             group = 1
           ),
-          color = node2Colors[3]
+          color = node2Colors[3],
+          size = 2
         )
       }
     }
@@ -1177,7 +1183,8 @@ AOTmapServer <- function(input, output, session) {
             x = node1Data$timestamp,
             group = 1
           ),
-          color = node1Colors[4]
+          color = node1Colors[4],
+          size = 2
         )
       }
       if(node2Data$no2[1] != "N/A"){
@@ -1189,7 +1196,8 @@ AOTmapServer <- function(input, output, session) {
             x = node1Data$timestamp,
             group = 1
           ),
-          color = node2Colors[4]
+          color = node2Colors[4],
+          size = 2
         )
       }
     }
@@ -1203,7 +1211,8 @@ AOTmapServer <- function(input, output, session) {
             x = node1Data$timestamp,
             group = 1
           ),
-          color = node1Colors[5]
+          color = node1Colors[5],
+          size = 2
         )
       }
       if(node2Data$co[1] != "N/A"){
@@ -1215,7 +1224,8 @@ AOTmapServer <- function(input, output, session) {
             x = node1Data$timestamp,
             group = 1
           ),
-          color = node2Colors[5]
+          color = node2Colors[5],
+          size = 2
         )
       }
     }
@@ -1229,7 +1239,8 @@ AOTmapServer <- function(input, output, session) {
             x = node1Data$timestamp,
             group = 1
           ),
-          color = node1Colors[6]
+          color = node1Colors[6],
+          size = 2
         )
       }
       if(node2Data$pm2_5[1] != "N/A"){
@@ -1241,7 +1252,8 @@ AOTmapServer <- function(input, output, session) {
             x = node1Data$timestamp,
             group = 1
           ),
-          color = node2Colors[6]
+          color = node2Colors[6],
+          size = 2
         )
       }
     }
@@ -1255,7 +1267,8 @@ AOTmapServer <- function(input, output, session) {
               x = node1Data$timestamp,
               group = 1
             ),
-            color = node1Colors[6]
+            color = node1Colors[6],
+            size = 2
           )
       }
       if(node2Data$pm10[1] != "N/A"){
@@ -1267,7 +1280,8 @@ AOTmapServer <- function(input, output, session) {
               x = node1Data$timestamp,
               group = 1
             ),
-            color = node2Colors[6]
+            color = node2Colors[6],
+            size = 2
           )
       }
     }
@@ -1281,8 +1295,9 @@ AOTmapServer <- function(input, output, session) {
               x = node1Data$timestamp,
               group = 1
             ),
-            color = node1Colors[6]
-          )+ ylim(-10, 100)
+            color = node1Colors[6],
+            size = 2
+          )+ ylim(-10, 120)
       }
       if(node2Data$humidity[1] != "N/A"){
         plot <-
@@ -1293,8 +1308,9 @@ AOTmapServer <- function(input, output, session) {
               x = node1Data$timestamp,
               group = 1
             ),
-            color = node2Colors[6]
-          )+ ylim(-10, 100)
+            color = node2Colors[6],
+            size = 2
+          )+ ylim(-10, 120)
       }
     }
     
@@ -1336,7 +1352,8 @@ AOTmapServer <- function(input, output, session) {
               x = node1Data$time,
               group = 1
             ),
-            color = node1Colors[1]
+            color = node1Colors[1],
+            size = 2
           )
       }
       if(node2Data$temperature[1] != "N/A"){
@@ -1348,7 +1365,8 @@ AOTmapServer <- function(input, output, session) {
               x = node2Data$time,
               group = 1
             ),
-            color = node2Colors[1]
+            color = node2Colors[1],
+            size = 2
           )
       }
     }
@@ -1363,7 +1381,8 @@ AOTmapServer <- function(input, output, session) {
               x = node1Data$time,
               group = 1
             ),
-            color = node1Colors[1]
+            color = node1Colors[1],
+            size = 2
           )
       }
       if(node2Data$humidity[1] != "N/A"){
@@ -1375,7 +1394,8 @@ AOTmapServer <- function(input, output, session) {
               x = node2Data$time,
               group = 1
             ),
-            color = node2Colors[1]
+            color = node2Colors[1],
+            size = 2
           )
       }
     }
@@ -1390,7 +1410,8 @@ AOTmapServer <- function(input, output, session) {
               x = node1Data$time,
               group = 1
             ),
-            color = node1Colors[1]
+            color = node1Colors[1],
+            size = 2
           )
       }
       if(node2Data$windSpeed[1] != "N/A"){
@@ -1402,7 +1423,8 @@ AOTmapServer <- function(input, output, session) {
               x = node2Data$time,
               group = 1
             ),
-            color = node2Colors[1]
+            color = node2Colors[1],
+            size = 2
           )
       }
     }
@@ -1417,7 +1439,8 @@ AOTmapServer <- function(input, output, session) {
               x = node1Data$time,
               group = 1
             ),
-            color = node1Colors[1]
+            color = node1Colors[1],
+            size = 2
           )
       }
       if(node2Data$windBearing[1] != "N/A"){
@@ -1429,7 +1452,8 @@ AOTmapServer <- function(input, output, session) {
               x = node2Data$time,
               group = 1
             ),
-            color = node2Colors[1]
+            color = node2Colors[1],
+            size = 2
           )
       }
     }
@@ -1444,7 +1468,8 @@ AOTmapServer <- function(input, output, session) {
               x = node1Data$time,
               group = 1
             ),
-            color = node1Colors[1]
+            color = node1Colors[1],
+            size = 2
           )
       }
       if(node2Data$cloudCover[1] != "N/A"){
@@ -1456,7 +1481,8 @@ AOTmapServer <- function(input, output, session) {
               x = node2Data$time,
               group = 1
             ),
-            color = node2Colors[1]
+            color = node2Colors[1],
+            size = 2
           )
       }
     }
@@ -1471,7 +1497,8 @@ AOTmapServer <- function(input, output, session) {
               x = node1Data$time,
               group = 1
             ),
-            color = node1Colors[1]
+            color = node1Colors[1],
+            size = 2
           )
       }
       if(node2Data$visibility[1] != "N/A"){
@@ -1483,7 +1510,8 @@ AOTmapServer <- function(input, output, session) {
               x = node2Data$time,
               group = 1
             ),
-            color = node2Colors[1]
+            color = node2Colors[1],
+            size = 2
           )
       }
     }
@@ -1498,7 +1526,8 @@ AOTmapServer <- function(input, output, session) {
               x = node1Data$time,
               group = 1
             ),
-            color = node1Colors[1]
+            color = node1Colors[1],
+            size = 2
           )
       }
       if(node2Data$pressure[1] != "N/A"){
@@ -1510,7 +1539,8 @@ AOTmapServer <- function(input, output, session) {
               x = node2Data$time,
               group = 1
             ),
-            color = node2Colors[1]
+            color = node2Colors[1],
+            size = 2
           )
       }
     }
