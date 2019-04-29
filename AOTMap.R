@@ -7,6 +7,7 @@ library(jpeg)
 library(grid)
 library(leaflet)
 library(scales)
+library(dplyr)
 library(RColorBrewer)
 
 source('DataModeler.R')
@@ -44,7 +45,7 @@ AOTMap <- function(id) {
         width= 12,
         title = "Node 1 Data",
         id = "tabset2",
-        height = 550,
+        height = 450,
         tabPanel(
           "AOT Data",
           box(
@@ -61,6 +62,30 @@ AOTMap <- function(id) {
             status = "primary",
             width = 12,
             dataTableOutput(nameSpace("darkSkyTableNode1"), width = "100%")
+          )
+        )
+      ), # Column for Node 2 data
+      tabBox(
+        title = "Node 2 Data",
+        id = "tabset3",
+        width = 12,
+        height = 450,
+        tabPanel(
+          "AOT Data",
+          box(
+            solidHeader = TRUE,
+            status = "primary",
+            width = 12,
+            dataTableOutput(nameSpace("AOTTableNode2"), width = "100%")
+          )
+        ),
+        tabPanel(
+          "Dark Sky Data",
+          box(
+            solidHeader = TRUE,
+            status = "primary",
+            width = 12,
+            dataTableOutput(nameSpace("darkSkyTableNode2"), width = "100%")
           )
         )
       )
@@ -156,41 +181,132 @@ AOTMap <- function(id) {
              )
        
   ), # end of column for node 1 data
-  column(5, # Column for Node 2 data
-    tabBox(
-      title = "Node 2 Data",
-      id = "tabset3",
-      width = 12,
-      height = 550,
-      tabPanel(
-        "AOT Data",
-        box(
-          solidHeader = TRUE,
-          status = "primary",
-          width = 12,
-          dataTableOutput(nameSpace("AOTTableNode2"), width = "100%")
-        )
-      ),
-      tabPanel(
-        "Dark Sky Data",
-        box(
-          solidHeader = TRUE,
-          status = "primary",
-          width = 12,
-          dataTableOutput(nameSpace("darkSkyTableNode2"), width = "100%")
-        )
-      )
+  column(5,box(
+    title = "Node Filter",
+    solidHeader = TRUE,
+    status = "primary",
+    width = 12,
+    radioButtons(
+      nameSpace("nodeFilter"),
+      inline = TRUE,
+      "Data to show:",
+      c("so2",
+        "h2s",
+        "o3",
+        "no2",
+        "co",
+        "pm2_5",
+        "pm10",
+        "temperature",
+        "intensity",
+        "humidity"),
+      selected = c("so2")
     )
+  )
   ) # end of column for node 1 data 
   ) # this is where the fluid row for the two node tables ends
   )
   
 }
 
+
+
+coList <- function(nodeLocations){
+  coList <- ls.observations(filters=list(sensor = 'chemsense.co.concentration'))
+  coNodeList <- unique(coList$node_vsn)
+  
+  coList <- nodeLocations %>% filter(vsn %in% coNodeList)
+  print(coList)
+  #co2List <- co2List %>% distinct(node_vsn, .keep_all = TRUE)
+  #print(co2List)
+  
+  return(as.data.frame(coList))
+}
+
+no2List <- function(nodeLocations){
+  no2List <- ls.observations(filters=list(sensor = 'chemsense.no2.concentration'))
+  no2NodeList <- unique(no2List$node_vsn)
+  no2List <- nodeLocations %>% filter(vsn %in% no2NodeList)
+  return(as.data.frame(no2List))
+}
+
+h2sList <- function(nodeLocations){
+  h2sList <- ls.observations(filters=list(sensor = 'chemsense.h2s.concentration'))
+  h2sNodeList <- unique(h2sList$node_vsn)
+  h2sList <- nodeLocations %>% filter(vsn %in% h2sNodeList)
+  return(as.data.frame(h2sList))
+}
+
+
+o3List <- function(nodeLocations){
+  o3List <- ls.observations(filters=list(sensor = 'chemsense.o3.concentration'))
+  o3NodeList <- unique(o3List$node_vsn)
+  o3List <- nodeLocations %>% filter(vsn %in% o3NodeList)
+  return(as.data.frame(o3List))
+}
+
+so2List <- function(nodeLocations){
+  so2List <- ls.observations(filters=list(sensor = 'chemsense.so2.concentration'))
+  so2NodeList <- unique(so2List$node_vsn)
+  so2List <- nodeLocations %>% filter(vsn %in% so2NodeList)
+  return(as.data.frame(so2List))
+}
+
+pm10List <- function(nodeLocations){
+  pm10List <- ls.observations(filters=list(sensor = 'alphasense.opc_n2.pm10'))
+  pm10NodeList <- unique(pm10List$node_vsn)
+  pm10List <- nodeLocations %>% filter(vsn %in% pm10NodeList)
+  return(as.data.frame(pm10List))
+}
+
+pm2_5List <- function(nodeLocations){
+  pm2_5List <- ls.observations(filters=list(sensor = 'alphasense.opc_n2.pm2_5'))
+  pm2_5ListNodeList <- unique(pm2_5List$node_vsn)
+  pm2_5List <- nodeLocations %>% filter(vsn %in% pm2_5ListNodeList)
+  return(as.data.frame(pm2_5List))
+}
+
+
+lightList <- function(nodeLocations){
+  lightList <- ls.observations(filters=list(sensor = 'lightsense.tsl250rd.intensity'))
+  lightListNodeList <- unique(lightList$node_vsn)
+  lightList <- nodeLocations %>% filter(vsn %in% lightListNodeList)
+  return(as.data.frame(lightList))
+}
+
+tempList <- function(nodeLocations){
+  tempList <- ls.observations(filters=list(sensor = 'metsense.tmp112.temperature'))
+  tempListNodeList <- unique(tempList$node_vsn)
+  tempList <- nodeLocations %>% filter(vsn %in% tempListNodeList)
+  return(as.data.frame(tempList))
+}
+
+humList <- function(nodeLocations){
+  humList <- ls.observations(filters=list(sensor = 'metsense.htu21d.humidity'))
+  humListNodeList <- unique(humList$node_vsn)
+  humList <- nodeLocations %>% filter(vsn %in% humListNodeList)
+  return(as.data.frame(humList))
+}
+
+
 AOTmapServer <- function(input, output, session) {
   dataSelectedReactive <- reactive(input$data_selected)
   ds_dataSelectedReactive <- reactive(input$ds_data_selected)
+  node_filterReactive <- reactive(input$nodeFilter)
   reactiveValues <- reactiveValues()
+  
+  
+  nodeLocations <- read_csv('nodeLocations.csv')
+  coList <- coList(nodeLocations)
+  no2List <- no2List(nodeLocations)
+  h2sList <- h2sList(nodeLocations)
+  o3List <- o3List(nodeLocations)
+  so2List <- so2List(nodeLocations)
+  pm10List <- pm10List(nodeLocations)
+  pm2_5List <- pm2_5List(nodeLocations)
+  lightList <- lightList(nodeLocations)
+  tempList <- tempList(nodeLocations)
+  humList <- humList(nodeLocations)
   
   # set a default val to start with
   reactiveValues$currNode <- "077"
@@ -481,6 +597,14 @@ AOTmapServer <- function(input, output, session) {
     return (newTime)
   }
   
+  
+  
+  
+  
+  
+  
+  
+  
   # ============================================================ UI - Maps
   
   output$Normal <- renderLeaflet({
@@ -493,15 +617,125 @@ AOTmapServer <- function(input, output, session) {
                    zoom = 12)
     
     #map %>% addMarkers(lng = coordinates$longitude, lat = coordinates$latitude)
-    map %>% addCircleMarkers(
-      lng = coordinates$longitude,
-      lat = coordinates$latitude,
-      radius = 4,
-      color = "blue",
-      fillOpacity = 1,
-      popup = coordinates$vsn,
-      layerId = coordinates$vsn
-    )
+    
+    
+    if ("so2" == node_filterReactive()){
+      map %>% addCircleMarkers(
+        lng = so2List$longitude,
+        lat = so2List$latitude,
+        radius = 4,
+        color = "blue",
+        fillOpacity = 1,
+        popup = so2List$vsn,
+        layerId = so2List$vsn
+      )
+    }
+    else if ("h2s" == node_filterReactive()){
+      map %>% addCircleMarkers(
+        lng = h2sList$longitude,
+        lat = h2sList$latitude,
+        radius = 4,
+        color = "blue",
+        fillOpacity = 1,
+        popup = h2sList$vsn,
+        layerId = h2sList$vsn
+      )
+    }
+    else if ("o3" == node_filterReactive()){
+      map %>% addCircleMarkers(
+        lng = o3List$longitude,
+        lat = o3List$latitude,
+        radius = 4,
+        color = "blue",
+        fillOpacity = 1,
+        popup = o3List$vsn,
+        layerId = o3List$vsn
+      )
+    }
+    else if ("no2" == node_filterReactive()){
+      map %>% addCircleMarkers(
+        lng = no2List$longitude,
+        lat = no2List$latitude,
+        radius = 4,
+        color = "blue",
+        fillOpacity = 1,
+        popup = no2List$vsn,
+        layerId = no2List$vsn
+      )
+    }
+    else if ("co" == node_filterReactive()){
+      map %>% addCircleMarkers(
+        lng = coList$longitude,
+        lat = coList$latitude,
+        radius = 4,
+        color = "blue",
+        fillOpacity = 1,
+        popup = coList$vsn,
+        layerId = coList$vsn
+      )
+    }
+    
+    else if ("intensity" == node_filterReactive()){
+      map %>% addCircleMarkers(
+        lng = lightList$longitude,
+        lat = lightList$latitude,
+        radius = 4,
+        color = "blue",
+        fillOpacity = 1,
+        popup = lightList$vsn,
+        layerId = lightList$vsn
+      )
+    }
+    
+    else if ("temperature" == node_filterReactive()){
+      map %>% addCircleMarkers(
+        lng = tempList$longitude,
+        lat = tempList$latitude,
+        radius = 4,
+        color = "blue",
+        fillOpacity = 1,
+        popup = tempList$vsn,
+        layerId = tempList$vsn
+      )
+    }
+    
+    else if ("pm10" == node_filterReactive()){
+      map %>% addCircleMarkers(
+        lng = pm10List$longitude,
+        lat = pm10List$latitude,
+        radius = 4,
+        color = "blue",
+        fillOpacity = 1,
+        popup = pm10List$vsn,
+        layerId = pm10List$vsn
+      )
+    }
+    
+    else if ("pm2_5" == node_filterReactive()){
+      map %>% addCircleMarkers(
+        lng = pm2_5List$longitude,
+        lat = pm2_5List$latitude,
+        radius = 4,
+        color = "blue",
+        fillOpacity = 1,
+        popup = pm2_5List$vsn,
+        layerId = pm2_5List$vsn
+      )
+    }
+    
+    else if ("humidity" == node_filterReactive()){
+      map %>% addCircleMarkers(
+        lng = humList$longitude,
+        lat = humList$latitude,
+        radius = 4,
+        color = "blue",
+        fillOpacity = 1,
+        popup = humList$vsn,
+        layerId = humList$vsn
+      )
+    }
+    
+    
   })
   
   output$StamenToner <- renderLeaflet({
@@ -514,17 +748,127 @@ AOTmapServer <- function(input, output, session) {
                    lat = 41.870,
                    zoom = 12)
     
-    #map %>% addMarkers(lng = coordinates$longitude, lat = coordinates$latitude)
-    map %>% addProviderTiles(providers$Stamen.Toner) %>% addCircleMarkers(
-      lng = coordinates$longitude,
-      lat = coordinates$latitude,
-      radius = 4,
-      color = "blue",
-      fillOpacity = 1,
-      popup = coordinates$vsn,
-      layerId = coordinates$vsn
-      
-    )
+
+    
+    if ("so2" == node_filterReactive()){
+      map %>% addProviderTiles(providers$Stamen.Toner)  %>% addCircleMarkers(
+        lng = so2List$longitude,
+        lat = so2List$latitude,
+        radius = 4,
+        color = "blue",
+        fillOpacity = 1,
+        popup = so2List$vsn,
+        layerId = so2List$vsn
+      )
+    }
+    else if ("h2s" == node_filterReactive()){
+      map %>% addProviderTiles(providers$Stamen.Toner)  %>% addCircleMarkers(
+        lng = h2sList$longitude,
+        lat = h2sList$latitude,
+        radius = 4,
+        color = "blue",
+        fillOpacity = 1,
+        popup = h2sList$vsn,
+        layerId = h2sList$vsn
+      )
+    }
+    else if ("o3" == node_filterReactive()){
+      map %>% addProviderTiles(providers$Stamen.Toner)  %>% addCircleMarkers(
+        lng = o3List$longitude,
+        lat = o3List$latitude,
+        radius = 4,
+        color = "blue",
+        fillOpacity = 1,
+        popup = o3List$vsn,
+        layerId = o3List$vsn
+      )
+    }
+    else if ("no2" == node_filterReactive()){
+      map %>% addProviderTiles(providers$Stamen.Toner)  %>% addCircleMarkers(
+        lng = no2List$longitude,
+        lat = no2List$latitude,
+        radius = 4,
+        color = "blue",
+        fillOpacity = 1,
+        popup = no2List$vsn,
+        layerId = no2List$vsn
+      )
+    }
+    else if ("co" == node_filterReactive()){
+      map %>% addProviderTiles(providers$Stamen.Toner)  %>% addCircleMarkers(
+        lng = coList$longitude,
+        lat = coList$latitude,
+        radius = 4,
+        color = "blue",
+        fillOpacity = 1,
+        popup = coList$vsn,
+        layerId = coList$vsn
+      )
+    }
+    
+    else if ("intensity" == node_filterReactive()){
+      map %>% addProviderTiles(providers$Stamen.Toner)  %>% addCircleMarkers(
+        lng = lightList$longitude,
+        lat = lightList$latitude,
+        radius = 4,
+        color = "blue",
+        fillOpacity = 1,
+        popup = lightList$vsn,
+        layerId = lightList$vsn
+      )
+    }
+    
+    else if ("temperature" == node_filterReactive()){
+      map %>% addProviderTiles(providers$Stamen.Toner)  %>% addCircleMarkers(
+        lng = tempList$longitude,
+        lat = tempList$latitude,
+        radius = 4,
+        color = "blue",
+        fillOpacity = 1,
+        popup = tempList$vsn,
+        layerId = tempList$vsn
+      )
+    }
+    
+    else if ("pm10" == node_filterReactive()){
+      map %>% addProviderTiles(providers$Stamen.Toner)  %>% addCircleMarkers(
+        lng = pm10List$longitude,
+        lat = pm10List$latitude,
+        radius = 4,
+        color = "blue",
+        fillOpacity = 1,
+        popup = pm10List$vsn,
+        layerId = pm10List$vsn
+      )
+    }
+    
+    else if ("pm2_5" == node_filterReactive()){
+      map %>% addProviderTiles(providers$Stamen.Toner)  %>% addCircleMarkers(
+        lng = pm2_5List$longitude,
+        lat = pm2_5List$latitude,
+        radius = 4,
+        color = "blue",
+        fillOpacity = 1,
+        popup = pm2_5List$vsn,
+        layerId = pm2_5List$vsn
+      )
+    }
+    
+    else if ("humidity" == node_filterReactive()){
+      map %>% addProviderTiles(providers$Stamen.Toner)  %>% addCircleMarkers(
+        lng = humList$longitude,
+        lat = humList$latitude,
+        radius = 4,
+        color = "blue",
+        fillOpacity = 1,
+        popup = humList$vsn,
+        layerId = humList$vsn
+      )
+    }
+    
+    
+    
+    
   })
   
   output$NightSky <- renderLeaflet({
@@ -537,15 +881,122 @@ AOTmapServer <- function(input, output, session) {
                    lat = 41.870,
                    zoom = 12)
     
-    map %>% addProviderTiles(providers$Esri.WorldImagery)  %>% addCircleMarkers(
-      lng = coordinates$longitude,
-      lat = coordinates$latitude,
-      radius = 4,
-      color = "blue",
-      fillOpacity = 1,
-      popup = coordinates$vsn,
-      layerId = coordinates$vsn
-    )
+    
+    if ("so2" == node_filterReactive()){
+      map %>% addProviderTiles(providers$Esri.WorldImagery)  %>% addCircleMarkers(
+        lng = so2List$longitude,
+        lat = so2List$latitude,
+        radius = 4,
+        color = "blue",
+        fillOpacity = 1,
+        popup = so2List$vsn,
+        layerId = so2List$vsn
+      )
+    }
+    else if ("h2s" == node_filterReactive()){
+      map %>% addProviderTiles(providers$Esri.WorldImagery)  %>% addCircleMarkers(
+        lng = h2sList$longitude,
+        lat = h2sList$latitude,
+        radius = 4,
+        color = "blue",
+        fillOpacity = 1,
+        popup = h2sList$vsn,
+        layerId = h2sList$vsn
+      )
+    }
+    else if ("o3" == node_filterReactive()){
+      map %>% addProviderTiles(providers$Esri.WorldImagery)  %>% addCircleMarkers(
+        lng = o3List$longitude,
+        lat = o3List$latitude,
+        radius = 4,
+        color = "blue",
+        fillOpacity = 1,
+        popup = o3List$vsn,
+        layerId = o3List$vsn
+      )
+    }
+    else if ("no2" == node_filterReactive()){
+      map %>% addProviderTiles(providers$Esri.WorldImagery)  %>% addCircleMarkers(
+        lng = no2List$longitude,
+        lat = no2List$latitude,
+        radius = 4,
+        color = "blue",
+        fillOpacity = 1,
+        popup = no2List$vsn,
+        layerId = no2List$vsn
+      )
+    }
+    else if ("co" == node_filterReactive()){
+      map %>% addProviderTiles(providers$Esri.WorldImagery)  %>% addCircleMarkers(
+        lng = coList$longitude,
+        lat = coList$latitude,
+        radius = 4,
+        color = "blue",
+        fillOpacity = 1,
+        popup = coList$vsn,
+        layerId = coList$vsn
+      )
+    }
+    
+    else if ("intensity" == node_filterReactive()){
+      map %>% addProviderTiles(providers$Esri.WorldImagery)  %>% addCircleMarkers(
+        lng = lightList$longitude,
+        lat = lightList$latitude,
+        radius = 4,
+        color = "blue",
+        fillOpacity = 1,
+        popup = lightList$vsn,
+        layerId = lightList$vsn
+      )
+    }
+    
+    else if ("temperature" == node_filterReactive()){
+      map %>% addProviderTiles(providers$Esri.WorldImagery)  %>% addCircleMarkers(
+        lng = tempList$longitude,
+        lat = tempList$latitude,
+        radius = 4,
+        color = "blue",
+        fillOpacity = 1,
+        popup = tempList$vsn,
+        layerId = tempList$vsn
+      )
+    }
+    
+    else if ("pm10" == node_filterReactive()){
+      map %>% addProviderTiles(providers$Esri.WorldImagery)  %>% addCircleMarkers(
+        lng = pm10List$longitude,
+        lat = pm10List$latitude,
+        radius = 4,
+        color = "blue",
+        fillOpacity = 1,
+        popup = pm10List$vsn,
+        layerId = pm10List$vsn
+      )
+    }
+    
+    else if ("pm2_5" == node_filterReactive()){
+      map %>% addProviderTiles(providers$Esri.WorldImagery)  %>% addCircleMarkers(
+        lng = pm2_5List$longitude,
+        lat = pm2_5List$latitude,
+        radius = 4,
+        color = "blue",
+        fillOpacity = 1,
+        popup = pm2_5List$vsn,
+        layerId = pm2_5List$vsn
+      )
+    }
+    
+    else if ("humidity" == node_filterReactive()){
+      map %>% addProviderTiles(providers$Esri.WorldImagery)  %>% addCircleMarkers(
+        lng = humList$longitude,
+        lat = humList$latitude,
+        radius = 4,
+        color = "blue",
+        fillOpacity = 1,
+        popup = humList$vsn,
+        layerId = humList$vsn
+      )
+    }
   })
   
   # ============================================================ UI - Tables
@@ -633,10 +1084,6 @@ AOTmapServer <- function(input, output, session) {
       node2Data <- node2AOTWeekDataReactive()
     }
     
-    # convert timestamp to posixct
-    #node1Data$timestamp <- apply(df, 1, updateTimeFormat)
-    #node2Data$timestamp <- apply(df, 1, updateTimeFormat)
-    
     node1Colors <- brewer.pal(n = 6, name = 'OrRd')
     node2Colors <- brewer.pal(n = 6, name = 'BuPu')
     
@@ -652,8 +1099,9 @@ AOTmapServer <- function(input, output, session) {
             x = node1Data$timestamp,
             group = 1
           ),
-          color = node1Colors[1]
-        )
+          color = node1Colors[1],
+          size = 2
+        ) + ylim(-15,20)
       }
       if(node2Data$so2[1] != "N/A"){
       plot <-
@@ -664,7 +1112,8 @@ AOTmapServer <- function(input, output, session) {
             x = node1Data$timestamp,
             group = 1
           ),
-          color = node2Colors[1]
+          color = node2Colors[1],
+          size = 2
         )
       }
     }
@@ -678,7 +1127,8 @@ AOTmapServer <- function(input, output, session) {
             x = node1Data$timestamp,
             group = 1
           ),
-          color = node1Colors[2]
+          color = node1Colors[2],
+          size = 2
         )
       }
       if(node2Data$h2s[1] != "N/A"){
@@ -690,7 +1140,8 @@ AOTmapServer <- function(input, output, session) {
             x = node1Data$timestamp,
             group = 1
           ),
-          color = node2Colors[2]
+          color = node2Colors[2],
+          size = 2
         )
       }
     }
@@ -704,7 +1155,8 @@ AOTmapServer <- function(input, output, session) {
             x = node1Data$timestamp,
             group = 1
           ),
-          color = node1Colors[3]
+          color = node1Colors[3],
+          size = 2
         )
       }
       if(node2Data$o3[1] != "N/A"){
@@ -716,7 +1168,8 @@ AOTmapServer <- function(input, output, session) {
             x = node1Data$timestamp,
             group = 1
           ),
-          color = node2Colors[3]
+          color = node2Colors[3],
+          size = 2
         )
       }
     }
@@ -730,7 +1183,8 @@ AOTmapServer <- function(input, output, session) {
             x = node1Data$timestamp,
             group = 1
           ),
-          color = node1Colors[4]
+          color = node1Colors[4],
+          size = 2
         )
       }
       if(node2Data$no2[1] != "N/A"){
@@ -742,7 +1196,8 @@ AOTmapServer <- function(input, output, session) {
             x = node1Data$timestamp,
             group = 1
           ),
-          color = node2Colors[4]
+          color = node2Colors[4],
+          size = 2
         )
       }
     }
@@ -756,7 +1211,8 @@ AOTmapServer <- function(input, output, session) {
             x = node1Data$timestamp,
             group = 1
           ),
-          color = node1Colors[5]
+          color = node1Colors[5],
+          size = 2
         )
       }
       if(node2Data$co[1] != "N/A"){
@@ -768,7 +1224,8 @@ AOTmapServer <- function(input, output, session) {
             x = node1Data$timestamp,
             group = 1
           ),
-          color = node2Colors[5]
+          color = node2Colors[5],
+          size = 2
         )
       }
     }
@@ -782,7 +1239,8 @@ AOTmapServer <- function(input, output, session) {
             x = node1Data$timestamp,
             group = 1
           ),
-          color = node1Colors[6]
+          color = node1Colors[6],
+          size = 2
         )
       }
       if(node2Data$pm2_5[1] != "N/A"){
@@ -794,7 +1252,8 @@ AOTmapServer <- function(input, output, session) {
             x = node1Data$timestamp,
             group = 1
           ),
-          color = node2Colors[6]
+          color = node2Colors[6],
+          size = 2
         )
       }
     }
@@ -808,7 +1267,8 @@ AOTmapServer <- function(input, output, session) {
               x = node1Data$timestamp,
               group = 1
             ),
-            color = node1Colors[6]
+            color = node1Colors[6],
+            size = 2
           )
       }
       if(node2Data$pm10[1] != "N/A"){
@@ -820,10 +1280,41 @@ AOTmapServer <- function(input, output, session) {
               x = node1Data$timestamp,
               group = 1
             ),
-            color = node2Colors[6]
+            color = node2Colors[6],
+            size = 2
           )
       }
     }
+    if ("humidity" %in% data_selected()) {
+      if(node1Data$humidity[1] != "N/A"){
+        plot <-
+          plot + geom_line(
+            data = node1Data,
+            aes(
+              y = node1Data$humidity,
+              x = node1Data$timestamp,
+              group = 1
+            ),
+            color = node1Colors[6],
+            size = 2
+          )+ ylim(-10, 120)
+      }
+      if(node2Data$humidity[1] != "N/A"){
+        plot <-
+          plot + geom_line(
+            data = node2Data,
+            aes(
+              y = node2Data$humidity,
+              x = node1Data$timestamp,
+              group = 1
+            ),
+            color = node2Colors[6],
+            size = 2
+          )+ ylim(-10, 120)
+      }
+    }
+    
+    
     plot <-  plot + theme_dark() +
       #scale_x_datetime(date_breaks = "1 hour") +
       theme(axis.text.x = element_text(angle = 50, vjust = 1.0, hjust = 1.0))
@@ -861,7 +1352,8 @@ AOTmapServer <- function(input, output, session) {
               x = node1Data$time,
               group = 1
             ),
-            color = node1Colors[1]
+            color = node1Colors[1],
+            size = 2
           )
       }
       if(node2Data$temperature[1] != "N/A"){
@@ -873,7 +1365,8 @@ AOTmapServer <- function(input, output, session) {
               x = node2Data$time,
               group = 1
             ),
-            color = node2Colors[1]
+            color = node2Colors[1],
+            size = 2
           )
       }
     }
@@ -888,7 +1381,8 @@ AOTmapServer <- function(input, output, session) {
               x = node1Data$time,
               group = 1
             ),
-            color = node1Colors[1]
+            color = node1Colors[1],
+            size = 2
           )
       }
       if(node2Data$humidity[1] != "N/A"){
@@ -900,7 +1394,8 @@ AOTmapServer <- function(input, output, session) {
               x = node2Data$time,
               group = 1
             ),
-            color = node2Colors[1]
+            color = node2Colors[1],
+            size = 2
           )
       }
     }
@@ -915,7 +1410,8 @@ AOTmapServer <- function(input, output, session) {
               x = node1Data$time,
               group = 1
             ),
-            color = node1Colors[1]
+            color = node1Colors[1],
+            size = 2
           )
       }
       if(node2Data$windSpeed[1] != "N/A"){
@@ -927,7 +1423,8 @@ AOTmapServer <- function(input, output, session) {
               x = node2Data$time,
               group = 1
             ),
-            color = node2Colors[1]
+            color = node2Colors[1],
+            size = 2
           )
       }
     }
@@ -942,7 +1439,8 @@ AOTmapServer <- function(input, output, session) {
               x = node1Data$time,
               group = 1
             ),
-            color = node1Colors[1]
+            color = node1Colors[1],
+            size = 2
           )
       }
       if(node2Data$windBearing[1] != "N/A"){
@@ -954,7 +1452,8 @@ AOTmapServer <- function(input, output, session) {
               x = node2Data$time,
               group = 1
             ),
-            color = node2Colors[1]
+            color = node2Colors[1],
+            size = 2
           )
       }
     }
@@ -969,7 +1468,8 @@ AOTmapServer <- function(input, output, session) {
               x = node1Data$time,
               group = 1
             ),
-            color = node1Colors[1]
+            color = node1Colors[1],
+            size = 2
           )
       }
       if(node2Data$cloudCover[1] != "N/A"){
@@ -981,7 +1481,8 @@ AOTmapServer <- function(input, output, session) {
               x = node2Data$time,
               group = 1
             ),
-            color = node2Colors[1]
+            color = node2Colors[1],
+            size = 2
           )
       }
     }
@@ -996,7 +1497,8 @@ AOTmapServer <- function(input, output, session) {
               x = node1Data$time,
               group = 1
             ),
-            color = node1Colors[1]
+            color = node1Colors[1],
+            size = 2
           )
       }
       if(node2Data$visibility[1] != "N/A"){
@@ -1008,7 +1510,8 @@ AOTmapServer <- function(input, output, session) {
               x = node2Data$time,
               group = 1
             ),
-            color = node2Colors[1]
+            color = node2Colors[1],
+            size = 2
           )
       }
     }
@@ -1023,7 +1526,8 @@ AOTmapServer <- function(input, output, session) {
               x = node1Data$time,
               group = 1
             ),
-            color = node1Colors[1]
+            color = node1Colors[1],
+            size = 2
           )
       }
       if(node2Data$pressure[1] != "N/A"){
@@ -1035,7 +1539,8 @@ AOTmapServer <- function(input, output, session) {
               x = node2Data$time,
               group = 1
             ),
-            color = node2Colors[1]
+            color = node2Colors[1],
+            size = 2
           )
       }
     }

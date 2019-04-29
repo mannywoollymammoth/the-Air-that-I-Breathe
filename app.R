@@ -42,7 +42,6 @@ ui <- dashboardPage(
             AOTMap(id = "AOTMap")),
     tabItem(tabName = "AOTTable",
             AOTTable(id = "AOTTable"))
-    
   )),
   
   body <- dashboardBody(useShinyjs(),
@@ -53,7 +52,6 @@ server <- function(input, output) {
   callModule(heatMapServer, id = "heatMap")
   callModule(AOTmapServer, id = "AOTMap")
   callModule(AOTTableServer, id = "AOTTable")
-  
 }
 
 # Run the application
