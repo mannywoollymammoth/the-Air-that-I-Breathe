@@ -7,6 +7,7 @@ library(jpeg)
 library(grid)
 library(leaflet)
 library(scales)
+library(dplyr)
 library(RColorBrewer)
 
 source('DataModeler.R')
@@ -44,7 +45,7 @@ AOTMap <- function(id) {
         width= 12,
         title = "Node 1 Data",
         id = "tabset2",
-        height = 550,
+        height = 450,
         tabPanel(
           "AOT Data",
           box(
@@ -161,7 +162,7 @@ AOTMap <- function(id) {
       title = "Node 2 Data",
       id = "tabset3",
       width = 12,
-      height = 550,
+      height = 450,
       tabPanel(
         "AOT Data",
         box(
@@ -187,10 +188,62 @@ AOTMap <- function(id) {
   
 }
 
+
+
+co2List <- function(nodeLocations){
+  co2List <- ls.observations(filters=list(sensor = 'chemsense.co.concentration'))
+  #co2NodeList <- unique(co2List$node_vsn)
+  co2List <- co2List %>% distinct(node_vsn, .keep_all = TRUE)
+  return(co2List)
+}
+
+no2List <- function(nodeLocations){
+  no2List <- ls.observations(filters=list(sensor = 'chemsense.no2.concentration'))
+  no2List <- no2List %>% distinct(node_vsn, .keep_all = TRUE)
+  return(no2List)
+}
+
+h2sList <- function(nodeLocations){
+  h2sList <- ls.observations(filters=list(sensor = 'chemsense.h2s.concentration'))
+  h2sList <- h2sList %>% distinct(node_vsn, .keep_all = TRUE)
+  return(h2sList)
+}
+
+
+o3List <- function(nodeLocations){
+  o3List <- ls.observations(filters=list(sensor = 'chemsense.o3.concentration'))
+  o3List <- o3List %>% distinct(node_vsn, .keep_all = TRUE)
+  return(o3List)
+}
+
+so2List <- function(nodeLocations){
+  so2List <- ls.observations(filters=list(sensor = 'chemsense.so2.concentration'))
+  so2List <- so2List %>% distinct(node_vsn, .keep_all = TRUE)
+  return(so2List)
+}
+
+
+lightList <- function(nodeLocations){
+  lightList <- ls.observations(filters=list(sensor = 'lightsense.tsl250rd.intensity'))
+  lightList <- lightList %>% distinct(node_vsn, .keep_all = TRUE)
+  return(lightList)
+}
+
+
 AOTmapServer <- function(input, output, session) {
   dataSelectedReactive <- reactive(input$data_selected)
   ds_dataSelectedReactive <- reactive(input$ds_data_selected)
   reactiveValues <- reactiveValues()
+  
+  
+  nodeLocations <- read_csv('nodeLocations.csv')
+  co2List <- co2List(nodeLocations)
+  no2List <- no2List(nodeLocations)
+  h2sList <- h2sList(nodeLocations)
+  o3List <- o3List(nodeLocations)
+  so2List <- so2List(nodeLocations)
+  lightList <- lightList(nodeLocations)
+  
   
   # set a default val to start with
   reactiveValues$currNode <- "077"
@@ -480,6 +533,14 @@ AOTmapServer <- function(input, output, session) {
     newTime <- as.POSIXct(strptime(newTime, tz = "UTC", format = "%Y-%m-%d %H:%M:%S"))
     return (newTime)
   }
+  
+  
+  
+  
+  
+  
+  
+  
   
   # ============================================================ UI - Maps
   
