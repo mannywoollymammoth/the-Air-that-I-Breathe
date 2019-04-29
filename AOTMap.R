@@ -47,21 +47,21 @@ AOTMap <- function(id) {
         id = "tabset2",
         height = 450,
         tabPanel(
-          "AOT Data",
-          box(
-            solidHeader = TRUE,
-            status = "primary",
-            width = 12,
-            dataTableOutput(nameSpace("AOTTableNode1"), width = "100%")
-          )
-        ),
-        tabPanel(
           "Dark Sky Data",
           box(
             solidHeader = TRUE,
             status = "primary",
             width = 12,
             dataTableOutput(nameSpace("darkSkyTableNode1"), width = "100%")
+          )
+        ),
+        tabPanel(
+          "AOT Data",
+          box(
+            solidHeader = TRUE,
+            status = "primary",
+            width = 12,
+            dataTableOutput(nameSpace("AOTTableNode1"), width = "100%")
           )
         )
       ), # Column for Node 2 data
@@ -71,21 +71,21 @@ AOTMap <- function(id) {
         width = 12,
         height = 450,
         tabPanel(
-          "AOT Data",
-          box(
-            solidHeader = TRUE,
-            status = "primary",
-            width = 12,
-            dataTableOutput(nameSpace("AOTTableNode2"), width = "100%")
-          )
-        ),
-        tabPanel(
           "Dark Sky Data",
           box(
             solidHeader = TRUE,
             status = "primary",
             width = 12,
             dataTableOutput(nameSpace("darkSkyTableNode2"), width = "100%")
+          )
+        ),
+        tabPanel(
+          "AOT Data",
+          box(
+            solidHeader = TRUE,
+            status = "primary",
+            width = 12,
+            dataTableOutput(nameSpace("AOTTableNode2"), width = "100%")
           )
         )
       )
@@ -209,7 +209,7 @@ AOTMap <- function(id) {
   
 }
 
-
+# ============================================================= Pollutants
 
 coList <- function(nodeLocations){
   coList <- ls.observations(filters=list(sensor = 'chemsense.co.concentration'))
@@ -236,7 +236,6 @@ h2sList <- function(nodeLocations){
   h2sList <- nodeLocations %>% filter(vsn %in% h2sNodeList)
   return(as.data.frame(h2sList))
 }
-
 
 o3List <- function(nodeLocations){
   o3List <- ls.observations(filters=list(sensor = 'chemsense.o3.concentration'))
@@ -266,7 +265,6 @@ pm2_5List <- function(nodeLocations){
   return(as.data.frame(pm2_5List))
 }
 
-
 lightList <- function(nodeLocations){
   lightList <- ls.observations(filters=list(sensor = 'lightsense.tsl250rd.intensity'))
   lightListNodeList <- unique(lightList$node_vsn)
@@ -288,25 +286,13 @@ humList <- function(nodeLocations){
   return(as.data.frame(humList))
 }
 
+# ============================================================ Server starts here
 
 AOTmapServer <- function(input, output, session) {
   dataSelectedReactive <- reactive(input$data_selected)
   ds_dataSelectedReactive <- reactive(input$ds_data_selected)
   node_filterReactive <- reactive(input$nodeFilter)
   reactiveValues <- reactiveValues()
-  
-  
-  nodeLocations <- read_csv('nodeLocations.csv')
-  coList <- coList(nodeLocations)
-  no2List <- no2List(nodeLocations)
-  h2sList <- h2sList(nodeLocations)
-  o3List <- o3List(nodeLocations)
-  so2List <- so2List(nodeLocations)
-  pm10List <- pm10List(nodeLocations)
-  pm2_5List <- pm2_5List(nodeLocations)
-  lightList <- lightList(nodeLocations)
-  tempList <- tempList(nodeLocations)
-  humList <- humList(nodeLocations)
   
   # set a default val to start with
   reactiveValues$currNode <- "077"
@@ -331,6 +317,20 @@ AOTmapServer <- function(input, output, session) {
   reactiveValues$ds_data_selected <- NULL
   
   autoInvalidate <- reactiveTimer(60000) # one minute
+  
+  # ==================================================== Node stuff
+  
+  nodeLocations <- read_csv('nodeLocations.csv')
+  coList <- coList(nodeLocations)
+  no2List <- no2List(nodeLocations)
+  h2sList <- h2sList(nodeLocations)
+  o3List <- o3List(nodeLocations)
+  so2List <- so2List(nodeLocations)
+  pm10List <- pm10List(nodeLocations)
+  pm2_5List <- pm2_5List(nodeLocations)
+  lightList <- lightList(nodeLocations)
+  tempList <- tempList(nodeLocations)
+  humList <- humList(nodeLocations)
   
   # ===================================================== AOT
   
@@ -596,14 +596,6 @@ AOTmapServer <- function(input, output, session) {
     newTime <- as.POSIXct(strptime(newTime, tz = "UTC", format = "%Y-%m-%d %H:%M:%S"))
     return (newTime)
   }
-  
-  
-  
-  
-  
-  
-  
-  
   
   # ============================================================ UI - Maps
   
