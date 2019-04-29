@@ -163,10 +163,10 @@ AOTTableServer <- function(input, output, session) {
     nameSpace <- session$ns
     
     if ("SO2" %in% input$data_selected) {
-      show(id = "SO2")
+      #show(id = nameSpace("SO2"))
     }
     else {
-      hide(id = "SO2")
+     # hide(id = "SO2")
     }
     
     
