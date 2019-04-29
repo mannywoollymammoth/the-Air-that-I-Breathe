@@ -53,7 +53,6 @@ server <- function(input, output) {
   callModule(heatMapServer, id = "heatMap")
   callModule(AOTmapServer, id = "AOTMap")
   callModule(AOTTableServer, id = "AOTTable")
-  
 }
 
 # Run the application

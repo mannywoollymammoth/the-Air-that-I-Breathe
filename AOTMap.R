@@ -211,60 +211,102 @@ AOTMap <- function(id) {
 
 
 
-co2List <- function(nodeLocations){
-  co2List <- ls.observations(filters=list(sensor = 'chemsense.co.concentration'))
-  #co2NodeList <- unique(co2List$node_vsn)
-  co2List <- co2List %>% distinct(node_vsn, .keep_all = TRUE)
-  return(co2List)
+coList <- function(nodeLocations){
+  coList <- ls.observations(filters=list(sensor = 'chemsense.co.concentration'))
+  coNodeList <- unique(coList$node_vsn)
+  
+  coList <- nodeLocations %>% filter(vsn %in% coNodeList)
+  print(coList)
+  #co2List <- co2List %>% distinct(node_vsn, .keep_all = TRUE)
+  #print(co2List)
+  
+  return(as.data.frame(coList))
 }
 
 no2List <- function(nodeLocations){
   no2List <- ls.observations(filters=list(sensor = 'chemsense.no2.concentration'))
-  no2List <- no2List %>% distinct(node_vsn, .keep_all = TRUE)
-  return(no2List)
+  no2NodeList <- unique(no2List$node_vsn)
+  no2List <- nodeLocations %>% filter(vsn %in% no2NodeList)
+  return(as.data.frame(no2List))
 }
 
 h2sList <- function(nodeLocations){
   h2sList <- ls.observations(filters=list(sensor = 'chemsense.h2s.concentration'))
-  h2sList <- h2sList %>% distinct(node_vsn, .keep_all = TRUE)
-  return(h2sList)
+  h2sNodeList <- unique(h2sList$node_vsn)
+  h2sList <- nodeLocations %>% filter(vsn %in% h2sNodeList)
+  return(as.data.frame(h2sList))
 }
 
 
 o3List <- function(nodeLocations){
   o3List <- ls.observations(filters=list(sensor = 'chemsense.o3.concentration'))
-  o3List <- o3List %>% distinct(node_vsn, .keep_all = TRUE)
-  return(o3List)
+  o3NodeList <- unique(o3List$node_vsn)
+  o3List <- nodeLocations %>% filter(vsn %in% o3NodeList)
+  return(as.data.frame(o3List))
 }
 
 so2List <- function(nodeLocations){
   so2List <- ls.observations(filters=list(sensor = 'chemsense.so2.concentration'))
-  so2List <- so2List %>% distinct(node_vsn, .keep_all = TRUE)
-  return(so2List)
+  so2NodeList <- unique(so2List$node_vsn)
+  so2List <- nodeLocations %>% filter(vsn %in% so2NodeList)
+  return(as.data.frame(so2List))
+}
+
+pm10List <- function(nodeLocations){
+  pm10List <- ls.observations(filters=list(sensor = 'alphasense.opc_n2.pm10'))
+  pm10NodeList <- unique(pm10List$node_vsn)
+  pm10List <- nodeLocations %>% filter(vsn %in% pm10NodeList)
+  return(as.data.frame(pm10List))
+}
+
+pm2_5List <- function(nodeLocations){
+  pm2_5List <- ls.observations(filters=list(sensor = 'alphasense.opc_n2.pm2_5'))
+  pm2_5ListNodeList <- unique(pm2_5List$node_vsn)
+  pm2_5List <- nodeLocations %>% filter(vsn %in% pm2_5ListNodeList)
+  return(as.data.frame(pm2_5List))
 }
 
 
 lightList <- function(nodeLocations){
   lightList <- ls.observations(filters=list(sensor = 'lightsense.tsl250rd.intensity'))
-  lightList <- lightList %>% distinct(node_vsn, .keep_all = TRUE)
-  return(lightList)
+  lightListNodeList <- unique(lightList$node_vsn)
+  lightList <- nodeLocations %>% filter(vsn %in% lightListNodeList)
+  return(as.data.frame(lightList))
+}
+
+tempList <- function(nodeLocations){
+  tempList <- ls.observations(filters=list(sensor = 'metsense.tmp112.temperature'))
+  tempListNodeList <- unique(tempList$node_vsn)
+  tempList <- nodeLocations %>% filter(vsn %in% tempListNodeList)
+  return(as.data.frame(tempList))
+}
+
+humList <- function(nodeLocations){
+  humList <- ls.observations(filters=list(sensor = 'metsense.htu21d.humidity'))
+  humListNodeList <- unique(humList$node_vsn)
+  humList <- nodeLocations %>% filter(vsn %in% humListNodeList)
+  return(as.data.frame(humList))
 }
 
 
 AOTmapServer <- function(input, output, session) {
   dataSelectedReactive <- reactive(input$data_selected)
   ds_dataSelectedReactive <- reactive(input$ds_data_selected)
+  node_filterReactive <- reactive(input$nodeFilter)
   reactiveValues <- reactiveValues()
   
   
   nodeLocations <- read_csv('nodeLocations.csv')
-  co2List <- co2List(nodeLocations)
+  coList <- coList(nodeLocations)
   no2List <- no2List(nodeLocations)
   h2sList <- h2sList(nodeLocations)
   o3List <- o3List(nodeLocations)
   so2List <- so2List(nodeLocations)
+  pm10List <- pm10List(nodeLocations)
+  pm2_5List <- pm2_5List(nodeLocations)
   lightList <- lightList(nodeLocations)
-  
+  tempList <- tempList(nodeLocations)
+  humList <- humList(nodeLocations)
   
   # set a default val to start with
   reactiveValues$currNode <- "077"
@@ -575,15 +617,136 @@ AOTmapServer <- function(input, output, session) {
                    zoom = 12)
     
     #map %>% addMarkers(lng = coordinates$longitude, lat = coordinates$latitude)
-    map %>% addCircleMarkers(
-      lng = coordinates$longitude,
-      lat = coordinates$latitude,
-      radius = 4,
-      color = "blue",
-      fillOpacity = 1,
-      popup = coordinates$vsn,
-      layerId = coordinates$vsn
-    )
+    
+    
+    
+    # map %>% addCircleMarkers(
+    #   lng = coordinates$longitude,
+    #   lat = coordinates$latitude,
+    #   radius = 4,
+    #   color = "blue",
+    #   fillOpacity = 1,
+    #   popup = coordinates$vsn,
+    #   layerId = coordinates$vsn
+    # )
+    
+    if ("so2" == node_filterReactive()){
+      map %>% addCircleMarkers(
+        lng = so2List$longitude,
+        lat = so2List$latitude,
+        radius = 4,
+        color = "blue",
+        fillOpacity = 1,
+        popup = so2List$vsn,
+        layerId = so2List$vsn
+      )
+    }
+    else if ("h2s" == node_filterReactive()){
+      map %>% addCircleMarkers(
+        lng = h2sList$longitude,
+        lat = h2sList$latitude,
+        radius = 4,
+        color = "blue",
+        fillOpacity = 1,
+        popup = h2sList$vsn,
+        layerId = h2sList$vsn
+      )
+    }
+    else if ("o3" == node_filterReactive()){
+      map %>% addCircleMarkers(
+        lng = o3List$longitude,
+        lat = o3List$latitude,
+        radius = 4,
+        color = "blue",
+        fillOpacity = 1,
+        popup = o3List$vsn,
+        layerId = o3List$vsn
+      )
+    }
+    else if ("no2" == node_filterReactive()){
+      map %>% addCircleMarkers(
+        lng = no2List$longitude,
+        lat = no2List$latitude,
+        radius = 4,
+        color = "blue",
+        fillOpacity = 1,
+        popup = no2List$vsn,
+        layerId = no2List$vsn
+      )
+    }
+    else if ("co" == node_filterReactive()){
+      map %>% addCircleMarkers(
+        lng = coList$longitude,
+        lat = coList$latitude,
+        radius = 4,
+        color = "blue",
+        fillOpacity = 1,
+        popup = coList$vsn,
+        layerId = coList$vsn
+      )
+    }
+    
+    else if ("intensity" == node_filterReactive()){
+      map %>% addCircleMarkers(
+        lng = lightList$longitude,
+        lat = lightList$latitude,
+        radius = 4,
+        color = "blue",
+        fillOpacity = 1,
+        popup = lightList$vsn,
+        layerId = lightList$vsn
+      )
+    }
+    
+    else if ("temperature" == node_filterReactive()){
+      map %>% addCircleMarkers(
+        lng = tempList$longitude,
+        lat = tempList$latitude,
+        radius = 4,
+        color = "blue",
+        fillOpacity = 1,
+        popup = tempList$vsn,
+        layerId = tempList$vsn
+      )
+    }
+    
+    else if ("pm10" == node_filterReactive()){
+      map %>% addCircleMarkers(
+        lng = pm10List$longitude,
+        lat = pm10List$latitude,
+        radius = 4,
+        color = "blue",
+        fillOpacity = 1,
+        popup = pm10List$vsn,
+        layerId = pm10List$vsn
+      )
+    }
+    
+    else if ("pm2_5" == node_filterReactive()){
+      map %>% addCircleMarkers(
+        lng = pm2_5List$longitude,
+        lat = pm2_5List$latitude,
+        radius = 4,
+        color = "blue",
+        fillOpacity = 1,
+        popup = pm2_5List$vsn,
+        layerId = pm2_5List$vsn
+      )
+    }
+    
+    else if ("humidity" == node_filterReactive()){
+      map %>% addCircleMarkers(
+        lng = humList$longitude,
+        lat = humList$latitude,
+        radius = 4,
+        color = "blue",
+        fillOpacity = 1,
+        popup = humList$vsn,
+        layerId = humList$vsn
+      )
+    }
+    
+    
   })
   
   output$StamenToner <- renderLeaflet({
@@ -596,17 +759,127 @@ AOTmapServer <- function(input, output, session) {
                    lat = 41.870,
                    zoom = 12)
     
-    #map %>% addMarkers(lng = coordinates$longitude, lat = coordinates$latitude)
-    map %>% addProviderTiles(providers$Stamen.Toner) %>% addCircleMarkers(
-      lng = coordinates$longitude,
-      lat = coordinates$latitude,
-      radius = 4,
-      color = "blue",
-      fillOpacity = 1,
-      popup = coordinates$vsn,
-      layerId = coordinates$vsn
-      
-    )
+
+    
+    if ("so2" == node_filterReactive()){
+      map %>% addProviderTiles(providers$Stamen.Toner)  %>% addCircleMarkers(
+        lng = so2List$longitude,
+        lat = so2List$latitude,
+        radius = 4,
+        color = "blue",
+        fillOpacity = 1,
+        popup = so2List$vsn,
+        layerId = so2List$vsn
+      )
+    }
+    else if ("h2s" == node_filterReactive()){
+      map %>% addProviderTiles(providers$Stamen.Toner)  %>% addCircleMarkers(
+        lng = h2sList$longitude,
+        lat = h2sList$latitude,
+        radius = 4,
+        color = "blue",
+        fillOpacity = 1,
+        popup = h2sList$vsn,
+        layerId = h2sList$vsn
+      )
+    }
+    else if ("o3" == node_filterReactive()){
+      map %>% addProviderTiles(providers$Stamen.Toner)  %>% addCircleMarkers(
+        lng = o3List$longitude,
+        lat = o3List$latitude,
+        radius = 4,
+        color = "blue",
+        fillOpacity = 1,
+        popup = o3List$vsn,
+        layerId = o3List$vsn
+      )
+    }
+    else if ("no2" == node_filterReactive()){
+      map %>% addProviderTiles(providers$Stamen.Toner)  %>% addCircleMarkers(
+        lng = no2List$longitude,
+        lat = no2List$latitude,
+        radius = 4,
+        color = "blue",
+        fillOpacity = 1,
+        popup = no2List$vsn,
+        layerId = no2List$vsn
+      )
+    }
+    else if ("co" == node_filterReactive()){
+      map %>% addProviderTiles(providers$Stamen.Toner)  %>% addCircleMarkers(
+        lng = coList$longitude,
+        lat = coList$latitude,
+        radius = 4,
+        color = "blue",
+        fillOpacity = 1,
+        popup = coList$vsn,
+        layerId = coList$vsn
+      )
+    }
+    
+    else if ("intensity" == node_filterReactive()){
+      map %>% addProviderTiles(providers$Stamen.Toner)  %>% addCircleMarkers(
+        lng = lightList$longitude,
+        lat = lightList$latitude,
+        radius = 4,
+        color = "blue",
+        fillOpacity = 1,
+        popup = lightList$vsn,
+        layerId = lightList$vsn
+      )
+    }
+    
+    else if ("temperature" == node_filterReactive()){
+      map %>% addProviderTiles(providers$Stamen.Toner)  %>% addCircleMarkers(
+        lng = tempList$longitude,
+        lat = tempList$latitude,
+        radius = 4,
+        color = "blue",
+        fillOpacity = 1,
+        popup = tempList$vsn,
+        layerId = tempList$vsn
+      )
+    }
+    
+    else if ("pm10" == node_filterReactive()){
+      map %>% addProviderTiles(providers$Stamen.Toner)  %>% addCircleMarkers(
+        lng = pm10List$longitude,
+        lat = pm10List$latitude,
+        radius = 4,
+        color = "blue",
+        fillOpacity = 1,
+        popup = pm10List$vsn,
+        layerId = pm10List$vsn
+      )
+    }
+    
+    else if ("pm2_5" == node_filterReactive()){
+      map %>% addProviderTiles(providers$Stamen.Toner)  %>% addCircleMarkers(
+        lng = pm2_5List$longitude,
+        lat = pm2_5List$latitude,
+        radius = 4,
+        color = "blue",
+        fillOpacity = 1,
+        popup = pm2_5List$vsn,
+        layerId = pm2_5List$vsn
+      )
+    }
+    
+    else if ("humidity" == node_filterReactive()){
+      map %>% addProviderTiles(providers$Stamen.Toner)  %>% addCircleMarkers(
+        lng = humList$longitude,
+        lat = humList$latitude,
+        radius = 4,
+        color = "blue",
+        fillOpacity = 1,
+        popup = humList$vsn,
+        layerId = humList$vsn
+      )
+    }
+    
+    
+    
+    
   })
   
   output$NightSky <- renderLeaflet({
@@ -619,15 +892,122 @@ AOTmapServer <- function(input, output, session) {
                    lat = 41.870,
                    zoom = 12)
     
-    map %>% addProviderTiles(providers$Esri.WorldImagery)  %>% addCircleMarkers(
-      lng = coordinates$longitude,
-      lat = coordinates$latitude,
-      radius = 4,
-      color = "blue",
-      fillOpacity = 1,
-      popup = coordinates$vsn,
-      layerId = coordinates$vsn
-    )
+    
+    if ("so2" == node_filterReactive()){
+      map %>% addProviderTiles(providers$Esri.WorldImagery)  %>% addCircleMarkers(
+        lng = so2List$longitude,
+        lat = so2List$latitude,
+        radius = 4,
+        color = "blue",
+        fillOpacity = 1,
+        popup = so2List$vsn,
+        layerId = so2List$vsn
+      )
+    }
+    else if ("h2s" == node_filterReactive()){
+      map %>% addProviderTiles(providers$Esri.WorldImagery)  %>% addCircleMarkers(
+        lng = h2sList$longitude,
+        lat = h2sList$latitude,
+        radius = 4,
+        color = "blue",
+        fillOpacity = 1,
+        popup = h2sList$vsn,
+        layerId = h2sList$vsn
+      )
+    }
+    else if ("o3" == node_filterReactive()){
+      map %>% addProviderTiles(providers$Esri.WorldImagery)  %>% addCircleMarkers(
+        lng = o3List$longitude,
+        lat = o3List$latitude,
+        radius = 4,
+        color = "blue",
+        fillOpacity = 1,
+        popup = o3List$vsn,
+        layerId = o3List$vsn
+      )
+    }
+    else if ("no2" == node_filterReactive()){
+      map %>% addProviderTiles(providers$Esri.WorldImagery)  %>% addCircleMarkers(
+        lng = no2List$longitude,
+        lat = no2List$latitude,
+        radius = 4,
+        color = "blue",
+        fillOpacity = 1,
+        popup = no2List$vsn,
+        layerId = no2List$vsn
+      )
+    }
+    else if ("co" == node_filterReactive()){
+      map %>% addProviderTiles(providers$Esri.WorldImagery)  %>% addCircleMarkers(
+        lng = coList$longitude,
+        lat = coList$latitude,
+        radius = 4,
+        color = "blue",
+        fillOpacity = 1,
+        popup = coList$vsn,
+        layerId = coList$vsn
+      )
+    }
+    
+    else if ("intensity" == node_filterReactive()){
+      map %>% addProviderTiles(providers$Esri.WorldImagery)  %>% addCircleMarkers(
+        lng = lightList$longitude,
+        lat = lightList$latitude,
+        radius = 4,
+        color = "blue",
+        fillOpacity = 1,
+        popup = lightList$vsn,
+        layerId = lightList$vsn
+      )
+    }
+    
+    else if ("temperature" == node_filterReactive()){
+      map %>% addProviderTiles(providers$Esri.WorldImagery)  %>% addCircleMarkers(
+        lng = tempList$longitude,
+        lat = tempList$latitude,
+        radius = 4,
+        color = "blue",
+        fillOpacity = 1,
+        popup = tempList$vsn,
+        layerId = tempList$vsn
+      )
+    }
+    
+    else if ("pm10" == node_filterReactive()){
+      map %>% addProviderTiles(providers$Esri.WorldImagery)  %>% addCircleMarkers(
+        lng = pm10List$longitude,
+        lat = pm10List$latitude,
+        radius = 4,
+        color = "blue",
+        fillOpacity = 1,
+        popup = pm10List$vsn,
+        layerId = pm10List$vsn
+      )
+    }
+    
+    else if ("pm2_5" == node_filterReactive()){
+      map %>% addProviderTiles(providers$Esri.WorldImagery)  %>% addCircleMarkers(
+        lng = pm2_5List$longitude,
+        lat = pm2_5List$latitude,
+        radius = 4,
+        color = "blue",
+        fillOpacity = 1,
+        popup = pm2_5List$vsn,
+        layerId = pm2_5List$vsn
+      )
+    }
+    
+    else if ("humidity" == node_filterReactive()){
+      map %>% addProviderTiles(providers$Esri.WorldImagery)  %>% addCircleMarkers(
+        lng = humList$longitude,
+        lat = humList$latitude,
+        radius = 4,
+        color = "blue",
+        fillOpacity = 1,
+        popup = humList$vsn,
+        layerId = humList$vsn
+      )
+    }
   })
   
   # ============================================================ UI - Tables
