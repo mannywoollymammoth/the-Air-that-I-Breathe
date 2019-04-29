@@ -241,7 +241,7 @@ heatMapServer <- function(input, output, session) {
     
     leafmap <-
       merge(chicago.map.hoods, dataWithTag, by = 'area_num_1')
-    pal <- colorNumeric("Spectral", NULL, n = 13)
+    pal <- colorNumeric("YlOrRd", NULL, n = 13)
     
     leaflet(data = leafmap) %>%
       addTiles() %>% setView(lng = -87.647998,

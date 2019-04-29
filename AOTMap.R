@@ -1095,10 +1095,6 @@ AOTmapServer <- function(input, output, session) {
       node2Data <- node2AOTWeekDataReactive()
     }
     
-    # convert timestamp to posixct
-    #node1Data$timestamp <- apply(df, 1, updateTimeFormat)
-    #node2Data$timestamp <- apply(df, 1, updateTimeFormat)
-    
     node1Colors <- brewer.pal(n = 6, name = 'OrRd')
     node2Colors <- brewer.pal(n = 6, name = 'BuPu')
     
@@ -1286,6 +1282,34 @@ AOTmapServer <- function(input, output, session) {
           )
       }
     }
+    if ("humidity" %in% data_selected()) {
+      if(node1Data$humidity[1] != "N/A"){
+        plot <-
+          plot + geom_line(
+            data = node1Data,
+            aes(
+              y = node1Data$humidity,
+              x = node1Data$timestamp,
+              group = 1
+            ),
+            color = node1Colors[6]
+          )+ ylim(-10, 100)
+      }
+      if(node2Data$humidity[1] != "N/A"){
+        plot <-
+          plot + geom_line(
+            data = node2Data,
+            aes(
+              y = node2Data$humidity,
+              x = node1Data$timestamp,
+              group = 1
+            ),
+            color = node2Colors[6]
+          )+ ylim(-10, 100)
+      }
+    }
+    
+    
     plot <-  plot + theme_dark() +
       #scale_x_datetime(date_breaks = "1 hour") +
       theme(axis.text.x = element_text(angle = 50, vjust = 1.0, hjust = 1.0))
