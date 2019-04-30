@@ -346,7 +346,7 @@ TablesServer <- function(input, output, session) {
   
   node2AOTCurrentDataReactive <- reactive({
     tryCatch({
-      getNodeAOTData("current", reactiveValues$firstNode,
+      getNodeAOTData("current", reactiveValues$secondNode,
                      reactiveValues$data_selected)
     },
     error = function(cond) {
@@ -1116,8 +1116,8 @@ TablesServer <- function(input, output, session) {
       node2Data <- node2AOTWeekDataReactive()
     }
     
-    node1Colors <- brewer.pal(n = 6, name = 'OrRd')
-    node2Colors <- brewer.pal(n = 6, name = 'BuPu')
+    node1Colors <- brewer.pal(n = 9, name = 'OrRd')
+    node2Colors <- brewer.pal(n = 9, name = 'BuPu')
     
     plot <- ggplot()
     
@@ -1129,9 +1129,10 @@ TablesServer <- function(input, output, session) {
           aes(
             y = node1Data$so2,
             x = node1Data$timestamp,
-            group = 1
+            group = 1,
+            color = "Node1So2"
           ),
-          color = node1Colors[1],
+          #color = node1Colors[1],
           size = 2
         ) + ylim(-15,20)
       }
@@ -1142,9 +1143,9 @@ TablesServer <- function(input, output, session) {
           aes(
             y = node2Data$so2,
             x = node1Data$timestamp,
-            group = 1
+            group = 1,
+            color = "Node2So2"
           ),
-          color = node2Colors[1],
           size = 2
         )
       }
@@ -1157,9 +1158,10 @@ TablesServer <- function(input, output, session) {
           aes(
             y = node1Data$h2s,
             x = node1Data$timestamp,
-            group = 1
+            group = 1,
+            color = "Node1h2s"
           ),
-          color = node1Colors[2],
+          #color = node1Colors[2],
           size = 2
         )
       }
@@ -1170,9 +1172,10 @@ TablesServer <- function(input, output, session) {
           aes(
             y = node2Data$h2s,
             x = node1Data$timestamp,
-            group = 1
+            group = 1,
+            color = "Node2h2s"
           ),
-          color = node2Colors[2],
+          #color = node2Colors[2],
           size = 2
         )
       }
@@ -1185,9 +1188,9 @@ TablesServer <- function(input, output, session) {
           aes(
             y = node1Data$o3,
             x = node1Data$timestamp,
-            group = 1
+            group = 1,
+            color = "Node1o3"
           ),
-          color = node1Colors[3],
           size = 2
         )
       }
@@ -1198,9 +1201,9 @@ TablesServer <- function(input, output, session) {
           aes(
             y = node2Data$o3,
             x = node1Data$timestamp,
-            group = 1
+            group = 1,
+            color = "Node2o3"
           ),
-          color = node2Colors[3],
           size = 2
         )
       }
@@ -1213,9 +1216,9 @@ TablesServer <- function(input, output, session) {
           aes(
             y = node1Data$no2,
             x = node1Data$timestamp,
-            group = 1
+            group = 1,
+            color = "Node1no2"
           ),
-          color = node1Colors[4],
           size = 2
         )
       }
@@ -1226,9 +1229,9 @@ TablesServer <- function(input, output, session) {
           aes(
             y = node2Data$no2,
             x = node1Data$timestamp,
-            group = 1
+            group = 1,
+            color = "Node2no2"
           ),
-          color = node2Colors[4],
           size = 2
         )
       }
@@ -1241,9 +1244,9 @@ TablesServer <- function(input, output, session) {
           aes(
             y = node1Data$co,
             x = node1Data$timestamp,
-            group = 1
+            group = 1,
+            color = "Node1co"
           ),
-          color = node1Colors[5],
           size = 2
         )
       }
@@ -1254,9 +1257,9 @@ TablesServer <- function(input, output, session) {
           aes(
             y = node2Data$co,
             x = node1Data$timestamp,
-            group = 1
+            group = 1,
+            color = "Node2co"
           ),
-          color = node2Colors[5],
           size = 2
         )
       }
@@ -1269,9 +1272,9 @@ TablesServer <- function(input, output, session) {
           aes(
             y = node1Data$pm2_5,
             x = node1Data$timestamp,
-            group = 1
+            group = 1,
+            color = "Node1pm2_5"
           ),
-          color = node1Colors[6],
           size = 2
         )
       }
@@ -1282,9 +1285,9 @@ TablesServer <- function(input, output, session) {
           aes(
             y = node2Data$pm2_5,
             x = node1Data$timestamp,
-            group = 1
+            group = 1,
+            color = "Node2pm2_5"
           ),
-          color = node2Colors[6],
           size = 2
         )
       }
@@ -1297,9 +1300,9 @@ TablesServer <- function(input, output, session) {
             aes(
               y = node1Data$pm10,
               x = node1Data$timestamp,
-              group = 1
+              group = 1,
+              color = "Node1pm10"
             ),
-            color = node1Colors[6],
             size = 2
           )
       }
@@ -1310,9 +1313,9 @@ TablesServer <- function(input, output, session) {
             aes(
               y = node2Data$pm10,
               x = node1Data$timestamp,
-              group = 1
+              group = 1,
+              color = "Node2pm10"
             ),
-            color = node2Colors[6],
             size = 2
           )
       }
@@ -1325,11 +1328,11 @@ TablesServer <- function(input, output, session) {
             aes(
               y = node1Data$humidity,
               x = node1Data$timestamp,
-              group = 1
+              group = 1,
+              color = "Node1humidity"
             ),
-            color = node1Colors[6],
             size = 2
-          )+ ylim(-10, 120)
+          )
       }
       if(node2Data$humidity[1] != "N/A"){
         plot <-
@@ -1338,15 +1341,53 @@ TablesServer <- function(input, output, session) {
             aes(
               y = node2Data$humidity,
               x = node1Data$timestamp,
-              group = 1
+              group = 1,
+              color = "Node2humidity"
             ),
-            color = node2Colors[6],
             size = 2
-          )+ ylim(-10, 120)
+          )
       }
+      
+    }
+    if ("intensity" %in% data_selected()) {
+      if(node1Data$intensity[1] != "N/A"){
+        plot <-
+          plot + geom_line(
+            data = node1Data,
+            aes(
+              y = node1Data$intensity,
+              x = node1Data$timestamp,
+              group = 1,
+              color = "Node1intensity"
+            ),
+            size = 2
+          )
+      }
+      if(node2Data$humidity[1] != "N/A"){
+        plot <-
+          plot + geom_line(
+            data = node2Data,
+            aes(
+              y = node2Data$intensity,
+              x = node1Data$timestamp,
+              group = 1,
+              color = "Node2intensity"
+            ),
+            size = 2
+          )
+      }
+      
     }
     
-    
+    plot <- plot  + scale_color_manual(name="Nodes", values=c("Node1So2"=node1Colors[1],"Node2So2"=node2Colors[1],
+                                                              "Node1h2s"=node1Colors[2],"Node2h2s"=node2Colors[2],
+                                                              "Node1o3"=node1Colors[3],  "Node2o3"=node2Colors[3],
+                                                              "Node1no2"=node1Colors[4],"Node2no2"=node2Colors[4],
+                                                              "Node1co"=node1Colors[5],  "Node2co"=node2Colors[5],
+                                                              "Node1pm2_5"=node1Colors[6],"Node2pm2_5"=node2Colors[6],
+                                                              "Node1pm10"=node1Colors[7],  "Node2pm10"=node2Colors[7],
+                                                              "Node1humidity"=node1Colors[8],  "Node2humidity"=node2Colors[8],
+                                                              "Node1intensity"=node1Colors[9],  "Node2intensity"=node2Colors[9]))
     plot <-  plot + theme_dark() +
       #scale_x_datetime(date_breaks = "1 hour") +
       theme(axis.text.x = element_text(angle = 50, vjust = 1.0, hjust = 1.0))
@@ -1369,8 +1410,8 @@ TablesServer <- function(input, output, session) {
       node2Data <- node2DarkSkyWeekDataReactive()
     }
     
-    node1Colors <- brewer.pal(n = 6, name = 'OrRd')
-    node2Colors <- brewer.pal(n = 6, name = 'BuPu')
+    node1Colors <- brewer.pal(n = 7, name = 'OrRd')
+    node2Colors <- brewer.pal(n = 7, name = 'BuPu')
     
     plot <- ggplot()
     
@@ -1382,9 +1423,9 @@ TablesServer <- function(input, output, session) {
             aes(
               y = node1Data$temperature,
               x = node1Data$time,
-              group = 1
+              group = 1,
+              color = "Node1temperature"
             ),
-            color = node1Colors[1],
             size = 2
           )
       }
@@ -1395,9 +1436,10 @@ TablesServer <- function(input, output, session) {
             aes(
               y = node2Data$temperature,
               x = node2Data$time,
-              group = 1
+              group = 1,
+              color = "Node2temperature"
             ),
-            color = node2Colors[1],
+            
             size = 2
           )
       }
@@ -1411,9 +1453,9 @@ TablesServer <- function(input, output, session) {
             aes(
               y = node1Data$humidity,
               x = node1Data$time,
-              group = 1
+              group = 1,
+              color = "Node1humidity"
             ),
-            color = node1Colors[1],
             size = 2
           )
       }
@@ -1424,9 +1466,9 @@ TablesServer <- function(input, output, session) {
             aes(
               y = node2Data$humidity,
               x = node2Data$time,
-              group = 1
+              group = 1,
+              color = "Node2humidity"
             ),
-            color = node2Colors[1],
             size = 2
           )
       }
@@ -1440,9 +1482,10 @@ TablesServer <- function(input, output, session) {
             aes(
               y = node1Data$windSpeed,
               x = node1Data$time,
-              group = 1
+              group = 1,
+              color = "Node1windSpeed"
             ),
-            color = node1Colors[1],
+            
             size = 2
           )
       }
@@ -1453,9 +1496,10 @@ TablesServer <- function(input, output, session) {
             aes(
               y = node2Data$windSpeed,
               x = node2Data$time,
-              group = 1
+              group = 1,
+              color = "Node2windSpeed"
             ),
-            color = node2Colors[1],
+            
             size = 2
           )
       }
@@ -1469,9 +1513,10 @@ TablesServer <- function(input, output, session) {
             aes(
               y = node1Data$windBearing,
               x = node1Data$time,
-              group = 1
+              group = 1,
+              color = "Node1windBearing"
             ),
-            color = node1Colors[1],
+            
             size = 2
           )
       }
@@ -1482,7 +1527,8 @@ TablesServer <- function(input, output, session) {
             aes(
               y = node2Data$windBearing,
               x = node2Data$time,
-              group = 1
+              group = 1,
+              color = "Node2windBearing"
             ),
             color = node2Colors[1],
             size = 2
@@ -1498,9 +1544,10 @@ TablesServer <- function(input, output, session) {
             aes(
               y = node1Data$cloudCover,
               x = node1Data$time,
-              group = 1
+              group = 1,
+              color = "Node1cloudCover"
             ),
-            color = node1Colors[1],
+            
             size = 2
           )
       }
@@ -1511,9 +1558,10 @@ TablesServer <- function(input, output, session) {
             aes(
               y = node2Data$cloudCover,
               x = node2Data$time,
-              group = 1
+              group = 1,
+              color = "Node2cloudCover"
             ),
-            color = node2Colors[1],
+            
             size = 2
           )
       }
@@ -1527,9 +1575,9 @@ TablesServer <- function(input, output, session) {
             aes(
               y = node1Data$visibility,
               x = node1Data$time,
-              group = 1
+              group = 1,
+              color = "Node1visibility"
             ),
-            color = node1Colors[1],
             size = 2
           )
       }
@@ -1540,9 +1588,10 @@ TablesServer <- function(input, output, session) {
             aes(
               y = node2Data$visibility,
               x = node2Data$time,
-              group = 1
+              group = 1,
+              color = "Node2visibility"
             ),
-            color = node2Colors[1],
+            
             size = 2
           )
       }
@@ -1556,9 +1605,10 @@ TablesServer <- function(input, output, session) {
             aes(
               y = node1Data$pressure,
               x = node1Data$time,
-              group = 1
+              group = 1,
+              color = "Node1pressure"
             ),
-            color = node1Colors[1],
+            
             size = 2
           )
       }
@@ -1569,14 +1619,20 @@ TablesServer <- function(input, output, session) {
             aes(
               y = node2Data$pressure,
               x = node2Data$time,
-              group = 1
+              group = 1,
+              color = "Node2pressure"
             ),
-            color = node2Colors[1],
             size = 2
           )
       }
     }
-    
+    plot <- plot + scale_color_manual(name="Nodes", values=c("Node1temperature"=node1Colors[1],"Node2temperature"=node2Colors[1],
+                                                                "Node1humidity"=node1Colors[2],"Node2humidity"=node2Colors[2],
+                                                                "Node1windSpeed"=node1Colors[3],  "Node2windSpeed"=node2Colors[3],
+                                                                "Node1windBearing"=node1Colors[4],"Node2windBearing"=node2Colors[4],
+                                                                "Node1cloudCover"=node1Colors[5],  "Node2cloudCover"=node2Colors[5],
+                                                                "Node1visibility"=node1Colors[6],"Node2visibility"=node2Colors[6],
+                                                                "Node1pressure"=node1Colors[7],  "Node2pressure"=node2Colors[7]))
     plot <-  plot + theme_dark() +
       #scale_x_datetime(date_breaks = "1 hour") +
       theme(axis.text.x = element_text(angle = 50, vjust = 1.0, hjust = 1.0))
