@@ -13,7 +13,7 @@ library(RColorBrewer)
 source('DataModeler.R')
 
 
-AOTMap <- function(id) {
+Tables <- function(id) {
   nameSpace <- NS(id)
   fluidRow( # This is the main fluid row
     
@@ -164,7 +164,7 @@ AOTMap <- function(id) {
              ), 
       column(1,
                box(
-                 title = "Timeframe for Data Tables",
+                 title = "Node List",
                  solidHeader = TRUE,
                  status = "primary",
                  width = 12,
@@ -288,7 +288,7 @@ humList <- function(nodeLocations){
 
 # ============================================================ Server starts here
 
-AOTmapServer <- function(input, output, session) {
+TablesServer <- function(input, output, session) {
   dataSelectedReactive <- reactive(input$data_selected)
   ds_dataSelectedReactive <- reactive(input$ds_data_selected)
   node_filterReactive <- reactive(input$nodeFilter)
@@ -478,6 +478,17 @@ AOTmapServer <- function(input, output, session) {
     autoInvalidate()
   })
   
+  observe({
+    rows <- input$AOTAllNodesTable_rows_selected
+    
+    if(length(rows) > 2) {
+      rows = rows[-1]
+    }
+    
+    print(rows)
+  })
+  
+  
   updateNodesWhenClicked <- function(currNodeId, mapType) {
     coordinates <- getNodeGeoPoints()
     currentPoint <-
@@ -607,9 +618,6 @@ AOTmapServer <- function(input, output, session) {
                    lng = -87.647998,
                    lat = 41.870,
                    zoom = 12)
-    
-    #map %>% addMarkers(lng = coordinates$longitude, lat = coordinates$latitude)
-    
     
     if ("so2" == node_filterReactive()){
       map %>% addCircleMarkers(
@@ -994,7 +1002,39 @@ AOTmapServer <- function(input, output, session) {
   # ============================================================ UI - Tables
   
   output$AOTAllNodesTable <- renderDataTable({
-    data <- getAllNodeData()
+    nodeFilter = node_filterReactive()
+    
+    if (nodeFilter == "co"){
+      data <- data.frame(vsn = coList$vsn, address = coList$address)  
+    }
+    else if (nodeFilter == "no2"){
+      data <- data.frame(vsn = no2List$vsn, address = no2List$address)  
+    }
+    else if (nodeFilter == "h2s"){
+      data <- data.frame(vsn = h2sList$vsn, address = h2sList$address)  
+    }
+    else if (nodeFilter == "o3"){
+      data <- data.frame(vsn = o3List$vsn, address = o3List$address)  
+    }
+    else if (nodeFilter == "humidity"){
+      data <- data.frame(vsn = humList$vsn, address = humList$address)  
+    }
+    else if (nodeFilter == "pm10"){
+      data <- data.frame(vsn = pm10List$vsn, address = pm10List$address)  
+    }
+    else if (nodeFilter == "pm2_5"){
+      data <- data.frame(vsn = pm2_5List$vsn, address = pm2_5List$address)  
+    }
+    else if (nodeFilter == "temperature"){
+      data <- data.frame(vsn = tempList$vsn, address = tempList$address)  
+    }
+    else if (nodeFilter == "intensity"){
+      data <- data.frame(vsn = lightList$vsn, address = lightList$address)  
+    }
+    else {
+      data <- data.frame(vsn = so2List$vsn, address = so2List$address)  
+    }
+    
     datatable(data, options = list(pageLength = 5))
   })
   
@@ -1373,7 +1413,7 @@ AOTmapServer <- function(input, output, session) {
     node1Colors <- brewer.pal(n = 7, name = 'OrRd')
     node2Colors <- brewer.pal(n = 7, name = 'BuPu')
     
-    plot <- ggplot() + ylim(-10, 20)
+    plot <- ggplot()
     
     if ("temperature" %in% ds_data_selected()) {
       if(node1Data$temperature[1] != "N/A"){

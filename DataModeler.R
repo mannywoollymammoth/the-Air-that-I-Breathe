@@ -40,15 +40,19 @@ getNodeGeoPoints <- function() {
   latitude = c()
   longitude = c()
   vsn = c()
+  address = c()
   counter <- 1
   
   #query data from the AOT devices
-  nodeLocations <- data.frame(ls.nodes(filters = list()))
+  nodeLocations <- data.frame(ls.nodes())
   nodeLatLong <- nodeLocations %>% select(location.geometry)
   coordinates <- nodeLatLong$location.geometry$coordinates
   nodeID <- nodeLocations %>% select(vsn)
   nodeID <- as.character(nodeID$vsn)
   
+  all_addresses <- nodeLocations %>% select(address)
+  all_addresses <- as.character(all_addresses$address)
+
   #remove any invalid coordinates from the list
   for (point in coordinates) {
     if (point[1] != 0) {
@@ -58,18 +62,18 @@ getNodeGeoPoints <- function() {
         append(latitude, point[2], after = length(latitude))
       vsn <-
         append(vsn, nodeID[counter], after = length(vsn))
+      address <-
+        append(address, all_addresses[counter], after = length(address))
     }
     counter <- counter + 1
   }
   #write the node locations to a file
-  nodeLocations <- data.frame(longitude, latitude, vsn)
+  nodeLocations <- data.frame(longitude, latitude, vsn, address)
   #write.csv(nodeLocations, file = "nodeLocations.csv")
   return (nodeLocations)
 }
 
-getAddressOfCurrNode <- function(node) {
-  node <- toString(node[3])
-  
+getAddressOfCurrNode <- function(vsn) {
   address <-
     subset(all_node_data$address, all_node_data$vsn == node)
   address <- toString(address)
@@ -115,7 +119,6 @@ getAllNodeData <- function() {
   
   df
 }
-
 
 # returns data for all nodes, not just one specific node
 # based on time period
@@ -173,9 +176,6 @@ getAOTvalue <- function(period, value) {
       sensor_path = all_observations$sensor_path,
       node_vsn = all_observations$node_vsn
     )
-  
-  # add address of current node
-  df$address <- apply(df, 1, getAddressOfCurrNode)
   
   # change format of time column
   df$timestamp <- apply(df, 1, updateTimeFormatForPlot)
